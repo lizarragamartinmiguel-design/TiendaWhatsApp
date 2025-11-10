@@ -2,521 +2,259 @@
 // ESTADO GLOBAL DE LA APLICACIÓN
 // =============================================
 let state = {
-    cart: [],
-    products: [],
-    settings: {
-        whatsappNumber: '5491112345678',
-        storeName: 'Tienda WhatsApp'
-    }
+  cart: [],
+  products: [],
+  settings: {
+    whatsappNumber: '5491112345678',
+    storeName: 'Tienda WhatsApp'
+  }
 };
+
+// 🟢 BACKEND EN RENDER
+const API_URL = 'https://tiendawhatsapp-backend.onrender.com';
 
 // =============================================
 // ELEMENTOS DEL DOM - MÁS ROBUSTO
 // =============================================
 function getElements() {
-    return {
-        cartIcon: document.getElementById('cart-icon'),
-        cartCount: document.getElementById('cart-count'),
-        cartFloating: document.getElementById('cart-floating'),
-        closeCart: document.getElementById('close-cart'),
-        cartItems: document.getElementById('cart-items'),
-        cartTotal: document.getElementById('cart-total'),
-        cartTotalElement: document.getElementById('cart-total-element'),
-        productsGrid: document.getElementById('products-grid'),
-        whatsappContact: document.getElementById('whatsapp-contact'),
-        footerStoreName: document.getElementById('footer-store-name')
-    };
+  return {
+    cartIcon: document.getElementById('cart-icon'),
+    cartCount: document.getElementById('cart-count'),
+    cartFloating: document.getElementById('cart-floating'),
+    closeCart: document.getElementById('close-cart'),
+    cartItems: document.getElementById('cart-items'),
+    cartTotal: document.getElementById('cart-total'),
+    cartTotalElement: document.getElementById('cart-total-element'),
+    productsGrid: document.getElementById('products-grid'),
+    whatsappContact: document.getElementById('whatsapp-contact'),
+    footerStoreName: document.getElementById('footer-store-name')
+  };
 }
 
 let elements = {};
 
 // =============================================
-// FUNCIONES DE PRODUCTOS (CARGAR DESDE ADMIN)
+// CARGAR PRODUCTOS DESDE BACKEND
 // =============================================
-
-// Cargar productos desde el almacenamiento del admin
-function loadProductsFromAdmin() {
-    try {
-        console.log('🔄 Cargando productos desde admin...');
-        
-        // Intentar cargar productos del admin
-        const adminProducts = localStorage.getItem('adminProducts');
-        const adminSettings = localStorage.getItem('adminSettings');
-        
-        if (adminProducts) {
-            const parsedProducts = JSON.parse(adminProducts);
-            state.products = Array.isArray(parsedProducts) ? parsedProducts : [];
-            console.log('✅ Productos cargados desde admin:', state.products.length);
-            
-            // Verificar cada producto
-            state.products.forEach((product, index) => {
-                if (!product.id) {
-                    product.id = Date.now() + index; // ID único si no existe
-                }
-                if (!product.price) {
-                    product.price = 0; // Precio por defecto
-                }
-                if (!product.image) {
-                    product.image = '📦'; // Imagen por defecto
-                }
-            });
-        } else {
-            // Productos por defecto si no hay en el admin
-            state.products = [
-                {
-                    id: 1,
-                    name: "Camiseta Básica",
-                    price: 29.99,
-                    image: "👕",
-                    description: "Camiseta de algodón 100%",
-                    category: "Ropa",
-                    stock: 10
-                },
-                {
-                    id: 2,
-                    name: "Zapatos Deportivos", 
-                    price: 49.99,
-                    image: "👟",
-                    description: "Zapatos cómodos para deporte",
-                    category: "Calzado",
-                    stock: 5
-                },
-                {
-                    id: 3,
-                    name: "Auriculares Bluetooth",
-                    price: 19.99,
-                    image: "🎧",
-                    description: "Sonido de alta calidad",
-                    category: "Electrónicos",
-                    stock: 8
-                }
-            ];
-            console.log('ℹ️ Usando productos por defecto');
-        }
-        
-        // Cargar configuración del admin
-        if (adminSettings) {
-            try {
-                const settings = JSON.parse(adminSettings);
-                state.settings = { ...state.settings, ...settings };
-                
-                // Actualizar información de contacto
-                if (elements.whatsappContact && settings.whatsappNumber) {
-                    elements.whatsappContact.textContent = `+${settings.whatsappNumber}`;
-                }
-                if (elements.footerStoreName && settings.storeName) {
-                    elements.footerStoreName.textContent = settings.storeName;
-                }
-                console.log('✅ Configuración cargada:', settings);
-            } catch (settingsError) {
-                console.error('❌ Error en configuración:', settingsError);
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Error cargando productos del admin:', error);
-        state.products = [];
-    }
+async function loadProductsFromBackend() {
+  try {
+    console.log('🔄 Cargando productos desde backend...');
+    const res = await fetch(`${API_URL}/api/products`);
+    if (!res.ok) throw new Error('Error al obtener productos');
+    state.products = await res.json();
+    console.log('✅ Productos cargados desde backend:', state.products.length);
+  } catch (err) {
+    console.warn('⚠️ Falló carga desde backend, usando locales', err);
+    // fallback a localStorage o defaults
+    const adminProducts = localStorage.getItem('adminProducts');
+    state.products = adminProducts ? JSON.parse(adminProducts) : [
+      { id: 1, name: 'Camiseta Básica',  price: 29.99, image: '👕', description: 'Algodón 100%', category: 'Ropa',      stock: 10 },
+      { id: 2, name: 'Zapatos Deportivos', price: 49.99, image: '👟', description: 'Cómodos',       category: 'Calzado',   stock: 5  },
+      { id: 3, name: 'Auriculares Bluetooth', price: 19.99, image: '🎧', description: 'Alta calidad', category: 'Electrónica', stock: 8 }
+    ];
+  }
 }
 
-// Renderizar productos en la tienda
+// =============================================
+// RENDERIZAR PRODUCTOS
+// =============================================
 function renderProducts() {
-    const productsGrid = elements.productsGrid;
-    
-    if (!productsGrid) {
-        console.error('❌ No se encontró el elemento products-grid');
-        return;
-    }
+  const grid = elements.productsGrid;
+  if (!grid) return;
 
-    let html = '';
-    
-    if (state.products.length === 0) {
-        html = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #666;">
-                <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                <h3>No hay productos disponibles</h3>
-                <p>Los productos se cargan desde el panel de administración</p>
-                <a href="/admin.html" class="btn btn-whatsapp" style="margin-top: 1rem;">
-                    <i class="fas fa-cog"></i> Ir al Panel Admin
-                </a>
-            </div>
-        `;
-    } else {
-        state.products.forEach(product => {
-            // Determinar qué mostrar como imagen
-            let imageContent = '📦'; // Por defecto
-            if (product.image) {
-                if (product.image.startsWith('http') || product.image.startsWith('data:')) {
-                    // Es una URL de imagen o data URL
-                    imageContent = `<img src="${product.image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                } else {
-                    // Es un emoji o texto
-                    imageContent = `<div style="font-size: 3rem;">${product.image}</div>`;
-                }
-            }
-            
-            html += `
-                <div class="product-card">
-                    <div class="product-image">
-                        ${imageContent}
-                    </div>
-                    <div class="product-info">
-                        <h3>${product.name || 'Producto sin nombre'}</h3>
-                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">
-                            ${product.category || 'General'}
-                        </p>
-                        <p style="color: #888; font-size: 0.8rem; margin-bottom: 1rem;">
-                            ${product.description || 'Producto de calidad'}
-                        </p>
-                        <div class="product-price">$${(product.price || 0).toFixed(2)}</div>
-                        <div class="product-actions">
-                            <button class="btn btn-outline" onclick="addToCart(${product.id})">
-                                <i class="fas fa-cart-plus"></i> Agregar al Carrito
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
+  if (!state.products.length) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;color:#666">
+        <i class="fas fa-box-open" style="font-size:3rem;margin-bottom:1rem"></i>
+        <h3>No hay productos</h3>
+        <p>Los productos se cargan desde el panel de administración</p>
+        <a href="/admin.html" class="btn btn-whatsapp">Ir al Admin</a>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = state.products.map(p => {
+    let img = '📦';
+    if (p.image) {
+      if (p.image.startsWith('http') || p.image.startsWith('data:')) {
+        img = `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+      } else {
+        img = `<div style="font-size:3rem">${p.image}</div>`;
+      }
     }
-    
-    productsGrid.innerHTML = html;
-    console.log('✅ Productos renderizados:', state.products.length);
+    return `
+      <div class="product-card">
+        <div class="product-image">${img}</div>
+        <div class="product-info">
+          <h3>${p.name}</h3>
+          <p style="color:#666;font-size:.9rem;margin-bottom:.5rem">${p.category||'General'}</p>
+          <p style="color:#888;font-size:.8rem;margin-bottom:1rem">${p.description||''}</p>
+          <div class="product-price">$${(p.price||0).toFixed(2)}</div>
+          <div class="product-actions">
+            <button class="btn btn-outline" onclick="addToCart(${p.id})">
+              <i class="fas fa-cart-plus"></i> Agregar
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // =============================================
-// FUNCIONES DEL CARRITO
+// CARRITO
 // =============================================
-
-// Agregar producto al carrito
-function addToCart(productId) {
-    const product = state.products.find(p => p.id == productId);
-    
-    if (!product) {
-        showNotification('Producto no encontrado', 'error');
-        return;
-    }
-
-    // Verificar stock
-    if (product.stock !== undefined && product.stock <= 0) {
-        showNotification('Producto sin stock disponible', 'error');
-        return;
-    }
-
-    const existingItem = state.cart.find(item => item.id == productId);
-    
-    if (existingItem) {
-        // Verificar stock al aumentar cantidad
-        if (product.stock !== undefined && existingItem.quantity >= product.stock) {
-            showNotification('No hay más stock disponible de este producto', 'error');
-            return;
-        }
-        existingItem.quantity += 1;
-    } else {
-        state.cart.push({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            quantity: 1
-        });
-    }
-    
-    saveCartToStorage();
-    renderCart();
-    updateCartCount();
-    showNotification(`${product.name} agregado al carrito`);
+function addToCart(id) {
+  const p = state.products.find(pr => pr.id == id);
+  if (!p) return;
+  if (p.stock !== undefined && p.stock <= 0) { showNotification('Sin stock','error'); return; }
+  const item = state.cart.find(it => it.id == id);
+  if (item) {
+    if (p.stock !== undefined && item.quantity >= p.stock) { showNotification('Límite de stock','error'); return; }
+    item.quantity++;
+  } else {
+    state.cart.push({ id: p.id, name: p.name, price: p.price, image: p.image, quantity: 1 });
+  }
+  saveCart();
+  renderCart();
+  updateCartCount();
+  showNotification(`${p.name} agregado`);
 }
 
-// Eliminar producto del carrito
-function removeFromCart(productId) {
-    state.cart = state.cart.filter(item => item.id != productId);
-    saveCartToStorage();
-    renderCart();
-    updateCartCount();
-    showNotification('Producto eliminado del carrito');
+function removeFromCart(id) {
+  state.cart = state.cart.filter(it => it.id != id);
+  saveCart();
+  renderCart();
+  updateCartCount();
+  showNotification('Producto eliminado');
 }
 
-// Actualizar cantidad de producto
-function updateQuantity(productId, change) {
-    const item = state.cart.find(item => item.id == productId);
-    const product = state.products.find(p => p.id == productId);
-    
-    if (item && product) {
-        const newQuantity = item.quantity + change;
-        
-        // Verificar stock
-        if (product.stock !== undefined && newQuantity > product.stock) {
-            showNotification('No hay suficiente stock disponible', 'error');
-            return;
-        }
-        
-        if (newQuantity < 1) {
-            removeFromCart(productId);
-        } else {
-            item.quantity = newQuantity;
-            saveCartToStorage();
-            renderCart();
-            updateCartCount();
-        }
-    }
+function updateQuantity(id, change) {
+  const item = state.cart.find(it => it.id == id);
+  const product = state.products.find(p => p.id == id);
+  if (!item) return;
+  const newQty = item.quantity + change;
+  if (newQty < 1) { removeFromCart(id); return; }
+  if (product && product.stock !== undefined && newQty > product.stock) { showNotification('Sin stock suficiente','error'); return; }
+  item.quantity = newQty;
+  saveCart();
+  renderCart();
+  updateCartCount();
 }
 
-// Renderizar carrito
 function renderCart() {
-    const cartItems = elements.cartItems;
-    const cartTotal = elements.cartTotal;
-    
-    if (!cartItems || !cartTotal) {
-        console.error('❌ Elementos del carrito no encontrados');
-        return;
+  const container = elements.cartItems;
+  const totalEl = elements.cartTotal;
+  if (!container || !totalEl) return;
+  if (!state.cart.length) {
+    container.innerHTML = `<div class="empty-cart"><i class="fas fa-shopping-cart"></i><p>Tu carrito está vacío</p></div>`;
+    totalEl.textContent = '0.00';
+    return;
+  }
+  let html = ''; let total = 0;
+  state.cart.forEach(it => {
+    const sub = (it.price || 0) * it.quantity;
+    total += sub;
+    let img = '📦';
+    if (it.image) {
+      if (it.image.startsWith('http') || it.image.startsWith('data:')) {
+        img = `<img src="${it.image}" alt="${it.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+      } else {
+        img = `<div style="font-size:1.5rem">${it.image}</div>`;
+      }
     }
-
-    const cart = state.cart;
-    let html = '';
-    let total = 0;
-    
-    if (cart.length === 0) {
-        html = `
-            <div class="empty-cart">
-                <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
-                <p>Tu carrito está vacío</p>
-                <p style="font-size: 0.8rem; color: #888;">Agrega productos desde el catálogo</p>
-            </div>
-        `;
-    } else {
-        cart.forEach(item => {
-            const itemTotal = (item.price || 0) * item.quantity;
-            total += itemTotal;
-            
-            let itemImage = '📦';
-            if (item.image) {
-                if (item.image.startsWith('http') || item.image.startsWith('data:')) {
-                    itemImage = `<img src="${item.image}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
-                } else {
-                    itemImage = `<div style="font-size: 1.5rem;">${item.image}</div>`;
-                }
-            }
-            
-            html += `
-                <div class="cart-item">
-                    <div class="cart-item-image">
-                        ${itemImage}
-                    </div>
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">$${(item.price || 0).toFixed(2)}</div>
-                        <div class="cart-item-quantity">
-                            <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <span style="padding: 0 10px; font-weight: bold;">${item.quantity}</span>
-                            <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <button class="quantity-btn" onclick="removeFromCart(${item.id})" style="background: #ff4444; color: white;">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-        });
-    }
-    
-    cartItems.innerHTML = html;
-    cartTotal.textContent = total.toFixed(2);
+    html += `
+      <div class="cart-item">
+        <div class="cart-item-image">${img}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${it.name}</div>
+          <div class="cart-item-price">$${(it.price||0).toFixed(2)}</div>
+          <div class="cart-item-quantity">
+            <button class="quantity-btn" onclick="updateQuantity(${it.id},-1)"><i class="fas fa-minus"></i></button>
+            <span>${it.quantity}</span>
+            <button class="quantity-btn" onclick="updateQuantity(${it.id},1)"><i class="fas fa-plus"></i></button>
+          </div>
+        </div>
+        <button class="quantity-btn" onclick="removeFromCart(${it.id})" style="background:#ff4444;color:white"><i class="fas fa-trash"></i></button>
+      </div>`;
+  });
+  container.innerHTML = html;
+  totalEl.textContent = total.toFixed(2);
 }
 
-// Actualizar contador del carrito
 function updateCartCount() {
-    const cartCount = elements.cartCount;
-    if (!cartCount) return;
-    
-    const totalItems = state.cart.reduce((total, item) => total + (item.quantity || 0), 0);
-    cartCount.textContent = totalItems;
+  const badge = elements.cartCount;
+  if (!badge) return;
+  const total = state.cart.reduce((t,it)=>t+it.quantity,0);
+  badge.textContent = total;
 }
 
-// Mostrar/ocultar carrito
 function toggleCart() {
-    const cartFloating = elements.cartFloating;
-    if (!cartFloating) return;
-    
-    cartFloating.classList.toggle('active');
+  elements.cartFloating?.classList.toggle('active');
 }
 
 // =============================================
-// FUNCIONES DE WHATSAPP
+// WHATSAPP
 // =============================================
-
-// Enviar pedido por WhatsApp
 function sendOrderToWhatsApp() {
-    if (state.cart.length === 0) {
-        showNotification('El carrito está vacío', 'error');
-        return;
-    }
-    
-    const message = generateOrderMessage();
-    const phoneNumber = state.settings.whatsappNumber || '5491112345678';
-    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    
-    window.open(url, '_blank');
-}
-
-// Generar mensaje del pedido
-function generateOrderMessage() {
-    let message = `¡Hola! Quiero hacer el siguiente pedido:\n\n`;
-    message += `*Pedido de ${state.settings.storeName}*\n\n`;
-    
-    state.cart.forEach(item => {
-        const itemTotal = (item.price || 0) * (item.quantity || 0);
-        message += `• ${item.name} - ${item.quantity} x $${(item.price || 0).toFixed(2)} = $${itemTotal.toFixed(2)}\n`;
-    });
-    
-    const total = state.cart.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
-    message += `\n*Total: $${total.toFixed(2)}*\n\n`;
-    message += `Información de contacto:\n`;
-    message += `Nombre: [Tu nombre]\n`;
-    message += `Dirección: [Tu dirección]\n`;
-    message += `Teléfono: [Tu teléfono]\n\n`;
-    message += `¡Gracias!`;
-    
-    return message;
+  if (!state.cart.length) { showNotification('Carrito vacío','error'); return; }
+  const phone = state.settings.whatsappNumber || '5491112345678';
+  let msg = `¡Hola! Quiero hacer este pedido:\n\n*${state.settings.storeName}*\n\n`;
+  let total = 0;
+  state.cart.forEach(it=>{
+    const sub = (it.price||0)*it.quantity;
+    total+=sub;
+    msg+=`• ${it.name} - ${it.quantity} × $${(it.price||0).toFixed(2)} = $${sub.toFixed(2)}\n`;
+  });
+  msg+=`\n*Total: $${total.toFixed(2)}*\n\nNombre: [Tu nombre]\nDirección: [Tu dirección]\nTeléfono: [Tu teléfono]\n\n¡Gracias!`;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
 // =============================================
-// FUNCIONES UTILITARIAS
+// NOTIFICACIONES
 // =============================================
-
-// Mostrar notificación
-function showNotification(message, type = 'success') {
-    // Crear elemento de notificación
-    const notification = document.createElement('div');
-    notification.className = `notification ${type === 'error' ? 'error' : 'success'}`;
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i>
-        ${message}
-    `;
-    
-    // Estilos de la notificación
-    notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: ${type === 'error' ? '#ff4444' : '#25D366'};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-weight: 500;
-        animation: slideIn 0.3s ease;
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Remover después de 3 segundos
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// Guardar carrito en localStorage
-function saveCartToStorage() {
-    try {
-        localStorage.setItem('cart', JSON.stringify(state.cart));
-    } catch (error) {
-        console.error('❌ Error guardando carrito:', error);
-    }
-}
-
-// Cargar carrito desde localStorage
-function loadCartFromStorage() {
-    try {
-        const savedCart = localStorage.getItem('cart');
-        if (savedCart) {
-            state.cart = JSON.parse(savedCart);
-        }
-    } catch (error) {
-        console.error('❌ Error cargando carrito:', error);
-        state.cart = [];
-    }
-}
-
-// Scroll a productos
-function scrollToProducts() {
-    const productsSection = document.getElementById('productos');
-    if (productsSection) {
-        productsSection.scrollIntoView({ 
-            behavior: 'smooth' 
-        });
-    }
+function showNotification(msg, type='success') {
+  const div = document.createElement('div');
+  div.className = `notification ${type}`;
+  div.innerHTML = `<i class="fas fa-${type==='error'?'exclamation-circle':'check-circle'}"></i> ${msg}`;
+  div.style.cssText = `position:fixed;top:100px;right:20px;background:${type==='error'?'#ff4444':'#25D366'};color:white;padding:1rem 1.5rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:10000;display:flex;align-items:center;gap:.5rem;font-weight:500;animation:slideIn .3s ease`;
+  document.body.appendChild(div);
+  setTimeout(()=>{div.style.animation='slideOut .3s ease'; setTimeout(()=>div.remove(),300)},3000);
 }
 
 // =============================================
-// EVENT LISTENERS
+// UTILS
 // =============================================
+function saveCart() { try { localStorage.setItem('cart',JSON.stringify(state.cart)); } catch {} }
+function loadCart() { try { state.cart=JSON.parse(localStorage.getItem('cart')||'[]'); } catch { state.cart=[]; } }
+function scrollToProducts() { document.getElementById('productos')?.scrollIntoView({behavior:'smooth'}); }
 
-function setupEventListeners() {
-    // Icono del carrito
-    if (elements.cartIcon) {
-        elements.cartIcon.addEventListener('click', toggleCart);
-    }
-    
-    // Cerrar carrito
-    if (elements.closeCart) {
-        elements.closeCart.addEventListener('click', toggleCart);
-    }
-    
-    // Cerrar carrito al hacer click fuera
-    document.addEventListener('click', (e) => {
-        if (elements.cartFloating && elements.cartFloating.classList.contains('active') && 
-            !elements.cartFloating.contains(e.target) && 
-            elements.cartIcon && !elements.cartIcon.contains(e.target)) {
-            toggleCart();
-        }
-    });
+// =============================================
+// EVENTOS
+// =============================================
+function setupEvents() {
+  elements.cartIcon?.addEventListener('click',toggleCart);
+  elements.closeCart?.addEventListener('click',toggleCart);
+  document.addEventListener('click',e=>{
+    if (elements.cartFloating?.classList.contains('active') &&
+        !elements.cartFloating.contains(e.target) &&
+        !elements.cartIcon?.contains(e.target)) toggleCart();
+  });
 }
 
 // =============================================
-// INICIALIZACIÓN MEJORADA
+// INICIALIZAR
 // =============================================
-
-function init() {
-    console.log('🚀 Inicializando tienda...');
-    
-    // Inicializar elementos
-    elements = getElements();
-    
-    // Cargar datos
-    loadProductsFromAdmin();
-    loadCartFromStorage();
-    
-    // Renderizar
-    renderProducts();
-    renderCart();
-    updateCartCount();
-    
-    // Configurar event listeners
-    setupEventListeners();
-    
-    console.log('✅ Tienda WhatsApp inicializada correctamente');
-    console.log('📦 Productos cargados:', state.products.length);
-    console.log('🛒 Productos en carrito:', state.cart.length);
-    console.log('🎯 Elementos encontrados:', Object.keys(elements).filter(key => elements[key] !== null).length);
+async function init() {
+  console.log('🚀 Inicializando tienda...');
+  elements = getElements();
+  loadCart();
+  await loadProductsFromBackend();
+  renderProducts();
+  renderCart();
+  updateCartCount();
+  setupEvents();
+  console.log('✅ Tienda lista');
 }
-
-// =============================================
-// HACER FUNCIONES GLOBALES
-// =============================================
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.updateQuantity = updateQuantity;
@@ -524,32 +262,5 @@ window.toggleCart = toggleCart;
 window.sendOrderToWhatsApp = sendOrderToWhatsApp;
 window.scrollToProducts = scrollToProducts;
 
-// =============================================
-// INICIAR APLICACIÓN
-// =============================================
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
-
-// =============================================
-// ESCUCHAR CAMBIOS EN PRODUCTOS DEL ADMIN
-// =============================================
-window.addEventListener('storage', function(e) {
-    if (e.key === 'adminProducts') {
-        console.log('🔄 Productos actualizados desde admin, recargando...');
-        loadProductsFromAdmin();
-        renderProducts();
-    }
-});
-
-// Recargar productos cada 5 segundos (para desarrollo)
-setInterval(() => {
-    const currentCount = state.products.length;
-    loadProductsFromAdmin();
-    if (state.products.length !== currentCount) {
-        console.log('🔄 Productos actualizados automáticamente');
-        renderProducts();
-    }
-}, 5000);
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+else init();
