@@ -7,6 +7,7 @@ import cors from 'cors';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+import { Server } from 'socket.io'; // ← nuevo
 
 import { syncService } from './backend/services/syncService.js';
 import { initDatabase } from './database/init.js';
@@ -20,8 +21,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const server = http.createServer(app); // ✅ Necesario para WebSockets
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
+
+// =============================================
+// SOCKET.IO – WEBSOCKETS
+// =============================================
+const io = new Server(server, { cors: { origin: '*' } });
+function emitProductsUpdated() {
+  io.emit('products:updated');
+}
 
 // =============================================
 // MIDDLEWARE
@@ -107,6 +116,7 @@ app.post('/api/products', async (req, res) => {
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [name, parseFloat(price), image || '📦', description, category || 'General', parseInt(stock) || 0]
     );
+    emitProductsUpdated(); // ← nuevo
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Error creando producto:', err);
@@ -125,6 +135,7 @@ app.put('/api/products/:id', async (req, res) => {
       [name, parseFloat(price), image, description, category, parseInt(stock) || 0, id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
+    emitProductsUpdated(); // ← nuevo
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error actualizando producto:', err);
@@ -137,6 +148,7 @@ app.delete('/api/products/:id', async (req, res) => {
     const { id } = req.params;
     const result = await query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
+    emitProductsUpdated(); // ← nuevo
     res.json({ message: 'Producto eliminado correctamente', product: result.rows[0] });
   } catch (err) {
     console.error('Error eliminando producto:', err);
@@ -243,7 +255,6 @@ async function startServer() {
     const dbConnected = await testConnection();
     if (!dbConnected) console.log('⚠️  No se pudo conectar a PostgreSQL. Algunas funciones pueden no estar disponibles.');
 
-    // ✅ Inicializar sincronización (WebSockets)
     syncService.start(server);
 
     server.listen(PORT, () => {

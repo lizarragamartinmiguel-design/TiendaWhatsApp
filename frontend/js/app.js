@@ -264,3 +264,8 @@ window.scrollToProducts = scrollToProducts;
 
 if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
 else init();
+const socket = io('https://tiendawhatsapp-backend.onrender.com');
+socket.on('products:updated', async () => {
+  await loadProductsFromBackend();
+  renderProducts();
+});
