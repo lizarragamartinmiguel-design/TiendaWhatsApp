@@ -881,6 +881,31 @@
             }
         }
 
+        // Crear clase Settings si no existe
+        async function ensureSettingsClass() {
+            try {
+                const Settings = Parse.Object.extend('Settings');
+                const testSettings = new Settings();
+                
+                testSettings.set('whatsappNumber', '');
+                testSettings.set('businessName', '');
+                testSettings.set('whatsappWelcome', '¡Hola! Bienvenido a nuestra tienda.');
+                testSettings.set('whatsappOrder', 'Pedido recibido! Productos: {productos} Total: ${total}');
+                testSettings.set('storeName', 'Tienda WhatsApp');
+                testSettings.set('storePhone', '');
+                testSettings.set('storeDescription', 'Tu tienda online integrada con WhatsApp');
+                
+                await testSettings.save();
+                await testSettings.destroy();
+                
+                console.log('✅ Clase Settings configurada en Back4App');
+                return true;
+            } catch (error) {
+                console.log('✅ Clase Settings ya existe en Back4App');
+                return true;
+            }
+        }
+
         // Cargar productos desde Back4App
         async function loadProductsFromBack4App() {
             try {
@@ -980,6 +1005,177 @@
             } catch (error) {
                 console.error('❌ Error eliminando producto:', error);
                 throw new Error(`No se pudo eliminar el producto: ${error.message}`);
+            }
+        }
+
+        // =============================================
+        // FUNCIONES DE CONFIGURACIÓN CORREGIDAS
+        // =============================================
+
+        // Cargar configuración desde Back4App
+        async function loadSettings() {
+            try {
+                const Settings = Parse.Object.extend('Settings');
+                const query = new Parse.Query(Settings);
+                
+                // Buscar configuración existente
+                const settings = await query.first();
+                
+                if (settings) {
+                    const settingsData = {
+                        whatsappNumber: settings.get('whatsappNumber') || '',
+                        businessName: settings.get('businessName') || '',
+                        whatsappWelcome: settings.get('whatsappWelcome') || '',
+                        whatsappOrder: settings.get('whatsappOrder') || '',
+                        storeName: settings.get('storeName') || 'Tienda WhatsApp',
+                        storePhone: settings.get('storePhone') || '',
+                        storeDescription: settings.get('storeDescription') || 'Tu tienda online integrada con WhatsApp'
+                    };
+                    
+                    // Actualizar estado global
+                    window.appState.settings = settingsData;
+                    
+                    // Llenar formularios
+                    fillSettingsForms(settingsData);
+                    
+                    // También guardar en localStorage como backup
+                    localStorage.setItem('adminSettings', JSON.stringify(settingsData));
+                    
+                    console.log('✅ Configuración cargada desde Back4App');
+                    return settingsData;
+                } else {
+                    // Si no existe configuración, crear una por defecto
+                    const defaultSettings = {
+                        whatsappNumber: '',
+                        businessName: '',
+                        whatsappWelcome: '¡Hola! Bienvenido a nuestra tienda. ¿En qué puedo ayudarte?',
+                        whatsappOrder: 'Pedido recibido! Productos: {productos} Total: ${total}',
+                        storeName: 'Tienda WhatsApp',
+                        storePhone: '',
+                        storeDescription: 'Tu tienda online integrada con WhatsApp'
+                    };
+                    
+                    await saveSettingsToBack4App(defaultSettings);
+                    return defaultSettings;
+                }
+                
+            } catch (error) {
+                console.error('❌ Error cargando configuración:', error);
+                
+                // Fallback a localStorage
+                try {
+                    const saved = localStorage.getItem('adminSettings');
+                    if (saved) {
+                        const settings = JSON.parse(saved);
+                        fillSettingsForms(settings);
+                        return settings;
+                    }
+                } catch (cacheError) {
+                    console.error('Error cargando cache:', cacheError);
+                }
+                
+                return {};
+            }
+        }
+
+        // Guardar configuración en Back4App
+        async function saveSettingsToBack4App(settingsData) {
+            try {
+                const Settings = Parse.Object.extend('Settings');
+                const query = new Parse.Query(Settings);
+                
+                // Buscar configuración existente o crear nueva
+                let settings = await query.first();
+                if (!settings) {
+                    settings = new Settings();
+                }
+                
+                // Actualizar todos los campos
+                settings.set('whatsappNumber', settingsData.whatsappNumber || '');
+                settings.set('businessName', settingsData.businessName || '');
+                settings.set('whatsappWelcome', settingsData.whatsappWelcome || '');
+                settings.set('whatsappOrder', settingsData.whatsappOrder || '');
+                settings.set('storeName', settingsData.storeName || '');
+                settings.set('storePhone', settingsData.storePhone || '');
+                settings.set('storeDescription', settingsData.storeDescription || '');
+                
+                const result = await settings.save();
+                
+                // Actualizar estado global
+                window.appState.settings = settingsData;
+                
+                // También guardar en localStorage como backup
+                localStorage.setItem('adminSettings', JSON.stringify(settingsData));
+                
+                console.log('✅ Configuración guardada en Back4App:', result.id);
+                return result;
+                
+            } catch (error) {
+                console.error('❌ Error guardando configuración:', error);
+                throw new Error(`No se pudo guardar la configuración: ${error.message}`);
+            }
+        }
+
+        // Llenar formularios con la configuración
+        function fillSettingsForms(settings) {
+            // Configuración de WhatsApp
+            if (adminElements.whatsappNumber) adminElements.whatsappNumber.value = settings.whatsappNumber || '';
+            if (adminElements.businessName) adminElements.businessName.value = settings.businessName || '';
+            if (adminElements.whatsappWelcome) adminElements.whatsappWelcome.value = settings.whatsappWelcome || '';
+            if (adminElements.whatsappOrder) adminElements.whatsappOrder.value = settings.whatsappOrder || '';
+            
+            // Configuración de la tienda
+            if (adminElements.storeName) adminElements.storeName.value = settings.storeName || '';
+            if (adminElements.storePhone) adminElements.storePhone.value = settings.storePhone || '';
+            if (adminElements.storeDescription) adminElements.storeDescription.value = settings.storeDescription || '';
+        }
+
+        // Manejar configuración de WhatsApp (CORREGIDO)
+        async function handleWhatsAppConfig(e) {
+            e.preventDefault();
+            
+            try {
+                const settings = {
+                    whatsappNumber: adminElements.whatsappNumber.value,
+                    businessName: adminElements.businessName.value,
+                    whatsappWelcome: adminElements.whatsappWelcome.value,
+                    whatsappOrder: adminElements.whatsappOrder.value,
+                    // Mantener los otros settings existentes
+                    ...window.appState.settings
+                };
+                
+                // Guardar en Back4App
+                await saveSettingsToBack4App(settings);
+                
+                showAlert('✅ Configuración de WhatsApp guardada correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error guardando configuración WhatsApp:', error);
+                showAlert('❌ Error al guardar la configuración: ' + error.message, 'error');
+            }
+        }
+
+        // Manejar configuración de la tienda (CORREGIDO)
+        async function handleStoreConfig(e) {
+            e.preventDefault();
+            
+            try {
+                const settings = {
+                    storeName: adminElements.storeName.value,
+                    storePhone: adminElements.storePhone.value,
+                    storeDescription: adminElements.storeDescription.value,
+                    // Mantener los otros settings existentes
+                    ...window.appState.settings
+                };
+                
+                // Guardar en Back4App
+                await saveSettingsToBack4App(settings);
+                
+                showAlert('✅ Configuración de la tienda guardada correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error guardando configuración tienda:', error);
+                showAlert('❌ Error al guardar la configuración: ' + error.message, 'error');
             }
         }
 
@@ -1383,36 +1579,6 @@
             }
         }
 
-        // =============================================
-        // FUNCIONES DE CONFIGURACIÓN
-        // =============================================
-        function handleWhatsAppConfig(e) {
-            e.preventDefault();
-            
-            const settings = {
-                whatsappNumber: adminElements.whatsappNumber.value,
-                businessName: adminElements.businessName.value,
-                whatsappWelcome: adminElements.whatsappWelcome.value,
-                whatsappOrder: adminElements.whatsappOrder.value
-            };
-            
-            localStorage.setItem('adminSettings', JSON.stringify(settings));
-            showAlert('Configuración de WhatsApp guardada correctamente', 'success');
-        }
-
-        function handleStoreConfig(e) {
-            e.preventDefault();
-            
-            const settings = {
-                storeName: adminElements.storeName.value,
-                storePhone: adminElements.storePhone.value,
-                storeDescription: adminElements.storeDescription.value
-            };
-            
-            localStorage.setItem('adminSettings', JSON.stringify(settings));
-            showAlert('Configuración de la tienda guardada correctamente', 'success');
-        }
-
         function testWhatsAppConfig() {
             const phone = adminElements.whatsappNumber.value || '5491112345678';
             if (!phone) {
@@ -1450,9 +1616,9 @@
             }, 3000);
         }
 
-        function loadAdminData() {
-            loadAdminProducts();
-            loadSettings();
+        async function loadAdminData() {
+            await loadAdminProducts();
+            await loadSettings();
             setupTabs();
         }
 
@@ -1471,21 +1637,6 @@
                     document.getElementById(tabId).classList.add('active');
                 });
             });
-        }
-
-        function loadSettings() {
-            const saved = localStorage.getItem('adminSettings');
-            if (saved) {
-                const settings = JSON.parse(saved);
-                
-                if (adminElements.whatsappNumber) adminElements.whatsappNumber.value = settings.whatsappNumber || '';
-                if (adminElements.businessName) adminElements.businessName.value = settings.businessName || '';
-                if (adminElements.storeName) adminElements.storeName.value = settings.storeName || '';
-                if (adminElements.storePhone) adminElements.storePhone.value = settings.storePhone || '';
-                if (adminElements.storeDescription) adminElements.storeDescription.value = settings.storeDescription || '';
-                if (adminElements.whatsappWelcome) adminElements.whatsappWelcome.value = settings.whatsappWelcome || '';
-                if (adminElements.whatsappOrder) adminElements.whatsappOrder.value = settings.whatsappOrder || '';
-            }
         }
 
         // =============================================
@@ -1594,6 +1745,7 @@
             
             // Configurar Back4App
             await ensureProductClass();
+            await ensureSettingsClass();
             
             // Configurar listeners de actualización
             setupUpdateListener();
@@ -1640,6 +1792,10 @@
             }
             
             setupImageUpload();
+            
+            // Cargar configuración al iniciar
+            await loadSettings();
+            
             console.log('✅ Panel Admin con Back4App inicializado correctamente');
         }
 
