@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Tienda WhatsApp</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 20px 20px;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 150px auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .admin-panel {
+            display: none;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .product-card-admin {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .product-card-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Estilos para el área de upload */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: var(--light-gray);
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .image-preview {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .preview-img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .config-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+            box-shadow: var(--shadow);
+        }
+
+        .config-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .product-image-admin {
+            width: 100%;
+            height: 150px;
+            background: var(--light-gray);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-image-admin img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .product-image-admin:hover img {
+            transform: scale(1.05);
+        }
+
+        .product-actions-admin {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-edit:hover {
+            background: #e0a800;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .btn-admin {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-admin:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Notificación de actualización */
+        .update-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-hover);
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .update-notification.show {
+            transform: translateX(0);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mejoras para upload */
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: rgba(37, 211, 102, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-area.uploading {
+            background: var(--light-gray);
+            border-color: #ffa726;
+        }
+
+        .upload-area.uploading i {
+            color: #ffa726;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-cog"></i>
+                <span>Panel Admin - Tienda WhatsApp</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="btn-admin">
+                    <i class="fas fa-arrow-left"></i> Volver a Tienda
+                </a>
+                <a href="#" id="logout-btn" class="btn-admin" style="background: #dc3545;">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Login Form -->
+    <div id="login-section" class="login-form">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: var(--accent-color);">
+            <i class="fas fa-lock"></i> Acceso Administrativo
+        </h2>
+        <div id="login-alert" class="alert error"></div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" name="username" required placeholder="Ingresa tu usuario">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required placeholder="Ingresa tu contraseña">
+            </div>
+            
+            <button type="submit" class="btn btn-whatsapp btn-full">
+                <i class="fas fa-sign-in-alt"></i>
+                Iniciar Sesión
+            </button>
+        </form>
+        
+        <!-- Información de acceso por defecto -->
+        <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+            <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">
+                <i class="fas fa-info-circle"></i> Credenciales por defecto:
+            </h4>
+            <p style="margin: 0.25rem 0; font-family: monospace;">Usuario: <strong>admin</strong></p>
+            <p style="margin: 0.25rem 0; font-family: monospace;">Contraseña: <strong>admin123</strong></p>
+            <small style="color: #666;">Cambia estas credenciales en producción</small>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="admin-panel admin-container">
+        <div id="alert" class="alert"></div>
+        
+        <!-- Estadísticas Rápidas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-products">0</div>
+                <div class="stat-label">Productos Activos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-orders">0</div>
+                <div class="stat-label">Pedidos Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-revenue">$0</div>
+                <div class="stat-label">Ingresos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="whatsapp-connected">✓</div>
+                <div class="stat-label">WhatsApp Conectado</div>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab active" data-tab="products">
+                <i class="fas fa-box"></i> Productos
+            </button>
+            <button class="tab" data-tab="whatsapp">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </button>
+            <button class="tab" data-tab="settings">
+                <i class="fas fa-cog"></i> Configuración
+            </button>
+        </div>
+
+        <!-- Gestión de Productos -->
+        <div id="products" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2><i class="fas fa-boxes"></i> Gestión de Productos</h2>
+                <button class="btn btn-whatsapp" id="add-product-btn">
+                    <i class="fas fa-plus"></i>
+                    Agregar Producto
+                </button>
+            </div>
+
+            <!-- Estado de carga -->
+            <div id="loading-products" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Cargando productos...</p>
+            </div>
+
+            <!-- Formulario de Producto -->
+            <div id="product-form" class="config-section" style="display: none;">
+                <h3 id="form-title"><i class="fas fa-edit"></i> Agregar Nuevo Producto</h3>
+                <form id="product-form-data">
+                    <input type="hidden" id="product-id">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="product-name">Nombre del Producto:*</label>
+                            <input type="text" id="product-name" required placeholder="Ej: Camiseta Básica">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-price">Precio:*</label>
+                            <input type="number" id="product-price" step="0.01" required placeholder="0.00" min="0">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="product-category">Categoría:</label>
+                            <select id="product-category">
+                                <option value="Ropa">Ropa</option>
+                                <option value="Calzado">Calzado</option>
+                                <option value="Accesorios">Accesorios</option>
+                                <option value="Electrónicos">Electrónicos</option>
+                                <option value="Hogar">Hogar</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-stock">Stock Disponible:</label>
+                            <input type="number" id="product-stock" value="10" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="product-description">Descripción:</label>
+                        <textarea id="product-description" rows="3" placeholder="Describe el producto..."></textarea>
+                    </div>
+                    
+                    <!-- Upload de Imagen -->
+                    <div class="form-group">
+                        <label for="product-image-upload">Imagen del Producto:</label>
+                        <div class="upload-area" id="upload-area">
+                            <input type="file" id="product-image-upload" accept="image/*" style="display: none;">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Haz clic para seleccionar una imagen</p>
+                            <p style="font-size: 0.8rem; color: #666;">Formatos: JPG, PNG, GIF (Máx. 5MB)</p>
+                        </div>
+                        <div class="upload-progress" id="upload-progress">
+                            <div class="upload-progress-bar" id="upload-progress-bar"></div>
+                        </div>
+                        <div class="image-preview" id="image-preview">
+                            <img id="preview-img" class="preview-img">
+                            <button type="button" id="remove-image" class="btn btn-sm" style="background: #dc3545; color: white; margin-top: 0.5rem;">
+                                <i class="fas fa-trash"></i> Eliminar Imagen
+                            </button>
+                        </div>
+                        <input type="hidden" id="product-image-url">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-whatsapp">
+                            <i class="fas fa-save"></i>
+                            Guardar Producto
+                        </button>
+                        <button type="button" class="btn btn-outline" id="cancel-form">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lista de Productos -->
+            <div id="products-list">
+                <h3><i class="fas fa-list"></i> Productos Existentes</h3>
+                <div id="products-grid-admin" class="products-grid">
+                    <!-- Los productos se cargan aquí dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración de WhatsApp -->
+        <div id="whatsapp" class="tab-content">
+            <div class="config-section">
+                <h3><i class="fab fa-whatsapp"></i> Configuración de WhatsApp para Ventas</h3>
+                
+                <form id="whatsapp-config-form">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="form-group">
+                            <label for="whatsapp-number">Número de WhatsApp para Ventas:*</label>
+                            <input type="text" id="whatsapp-number" 
+                                   placeholder="Ej: 5491112345678" 
+                                   required
+                                   style="border: 2px solid var(--primary-color);">
+                            <small style="color: #666;">Formato: código país + número (sin +). Ej: 5491112345678</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="business-name">Nombre del Negocio:</label>
+                            <input type="text" id="business-name" 
+                                   placeholder="Ej: Mi Tienda Online">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="form-group">
+                            <label for="whatsapp-welcome">Mensaje de Bienvenida:</label>
+                            <textarea id="whatsapp-welcome" rows="3" 
+                                      placeholder="¡Hola! Bienvenido a nuestra tienda. ¿En qué puedo ayudarte?"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="whatsapp-order">Plantilla de Pedidos:</label>
+                            <textarea id="whatsapp-order" rows="3" 
+                                      placeholder="Pedido recibido! Productos: {productos} Total: ${total}"></textarea>
+                            <small style="color: #666;">Variables disponibles: {productos}, {total}, {cliente}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-whatsapp">
+                            <i class="fas fa-save"></i>
+                            Guardar Configuración
+                        </button>
+                        <button type="button" class="btn btn-outline" id="test-whatsapp-btn">
+                            <i class="fab fa-whatsapp"></i>
+                            Probar Configuración
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Configuración General -->
+        <div id="settings" class="tab-content">
+            <div class="config-section">
+                <h3><i class="fas fa-store"></i> Información de la Tienda</h3>
+                
+                <form id="store-config-form">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="form-group">
+                            <label for="store-name">Nombre de la Tienda:</label>
+                            <input type="text" id="store-name" value="Tienda WhatsApp" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="store-phone">Teléfono de Contacto:</label>
+                            <input type="text" id="store-phone" placeholder="+1234567890">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="store-description">Descripción:</label>
+                        <textarea id="store-description" rows="2">Tu tienda online integrada con WhatsApp</textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-whatsapp">
+                            <i class="fas fa-save"></i>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="config-section" style="border-left-color: #dc3545;">
+                <h3><i class="fas fa-database"></i> Información del Sistema</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div>
+                        <p><strong>Base de datos:</strong> Back4App (Parse)</p>
+                        <p><strong>Productos activos:</strong> <span id="product-count">0</span></p>
+                        <p><strong>Versión:</strong> 2.0</p>
+                    </div>
+                    <div>
+                        <p><strong>Frontend:</strong> Netlify</p>
+                        <p><strong>WhatsApp integrado:</strong> Sí</p>
+                        <p><strong>Estado:</strong> <span style="color: var(--primary-color);">● En línea</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Seguridad -->
+            <div class="config-section" style="border-left-color: #ffc107;">
+                <h3><i class="fas fa-shield-alt"></i> Configuración de Seguridad</h3>
+                
+                <div class="form-group">
+                    <label for="admin-username">Usuario Administrador:</label>
+                    <input type="text" id="admin-username" value="admin" readonly style="background: #f8f9fa;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="admin-password">Nueva Contraseña:</label>
+                    <input type="password" id="admin-password" placeholder="Dejar vacío para no cambiar">
+                    <small style="color: #666;">Contraseña actual: <code>admin123</code></small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-whatsapp" id="update-password-btn">
+                        <i class="fas fa-key"></i>
+                        Actualizar Contraseña
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificación de actualización -->
+    <div id="update-notification" class="update-notification">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-sync-alt"></i>
+            <span>Productos actualizados</span>
+        </div>
+    </div>
+
+    <!-- Incluir SDK de Parse (Back4App) -->
+    <script src="https://unpkg.com/parse/dist/parse.min.js"></script>
+    <script>
+        // =============================================
+        // CONFIGURACIÓN BACK4APP - CON TUS CREDENCIALES REALES
+        // =============================================
+        const BACK4APP_CONFIG = {
+            applicationId: 'vRn25suEgknHSSZSALpSXXWd0I2EPcIFGBPBFODW',
+            javascriptKey: 'UxlCa92gr2i1hDu8pBuJMeuanXbhDpVjTMvMzTl9',
+            serverURL: 'https://parseapi.back4app.com/'
+        };
+
+        // Inicializar Back4App
+        Parse.initialize(BACK4APP_CONFIG.applicationId, BACK4APP_CONFIG.javascriptKey);
+        Parse.serverURL = BACK4APP_CONFIG.serverURL;
+        console.log('✅ Back4App configurado correctamente');
+
+        // =============================================
+        // CONFIGURACIÓN DE SEGURIDAD
+        // =============================================
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123'
+        };
+
+        // =============================================
+        // ESTADO COMPARTIDO GLOBAL
+        // =============================================
+        window.appState = {
+            products: [],
+            settings: {},
+            isLoggedIn: false
+        };
+
+        // =============================================
+        // ELEMENTOS DEL DOM - ADMIN
+        // =============================================
+        const adminElements = {
+            loginSection: document.getElementById('login-section'),
+            adminPanel: document.getElementById('admin-panel'),
+            loginForm: document.getElementById('login-form'),
+            logoutBtn: document.getElementById('logout-btn'),
+            alert: document.getElementById('alert'),
+            loginAlert: document.getElementById('login-alert'),
+            
+            // Productos
+            productForm: document.getElementById('product-form'),
+            productFormData: document.getElementById('product-form-data'),
+            productsGridAdmin: document.getElementById('products-grid-admin'),
+            addProductBtn: document.getElementById('add-product-btn'),
+            cancelForm: document.getElementById('cancel-form'),
+            loadingProducts: document.getElementById('loading-products'),
+            
+            // Form inputs
+            productId: document.getElementById('product-id'),
+            productName: document.getElementById('product-name'),
+            productPrice: document.getElementById('product-price'),
+            productCategory: document.getElementById('product-category'),
+            productStock: document.getElementById('product-stock'),
+            productDescription: document.getElementById('product-description'),
+            productImageUrl: document.getElementById('product-image-url'),
+            
+            // WhatsApp
+            whatsappConfigForm: document.getElementById('whatsapp-config-form'),
+            whatsappNumber: document.getElementById('whatsapp-number'),
+            businessName: document.getElementById('business-name'),
+            whatsappWelcome: document.getElementById('whatsapp-welcome'),
+            whatsappOrder: document.getElementById('whatsapp-order'),
+            testWhatsappBtn: document.getElementById('test-whatsapp-btn'),
+            
+            // Store
+            storeConfigForm: document.getElementById('store-config-form'),
+            storeName: document.getElementById('store-name'),
+            storePhone: document.getElementById('store-phone'),
+            storeDescription: document.getElementById('store-description'),
+            
+            // Stats
+            totalProducts: document.getElementById('total-products'),
+            productCount: document.getElementById('product-count'),
+            totalOrders: document.getElementById('total-orders'),
+            totalRevenue: document.getElementById('total-revenue'),
+            whatsappConnected: document.getElementById('whatsapp-connected')
+        };
+
+        // =============================================
+        // SISTEMA DE UPLOAD DE IMÁGENES CON BACK4APP
+        // =============================================
+
+        // Subir imagen a Back4App
+        async function uploadImageToBack4App(file) {
+            try {
+                console.log('📤 Subiendo imagen a Back4App...', file.name);
+                
+                // Mostrar estado de subida
+                showUploadProgress(30);
+                
+                // Crear Parse File
+                const parseFile = new Parse.File(file.name, file);
+                
+                // Mostrar progreso
+                showUploadProgress(60);
+                
+                // Guardar archivo en Back4App
+                await parseFile.save();
+                
+                // Obtener URL de la imagen
+                const imageUrl = parseFile.url();
+                
+                showUploadProgress(100);
+                console.log('✅ Imagen subida correctamente:', imageUrl);
+                return imageUrl;
+                
+            } catch (error) {
+                console.error('❌ Error subiendo imagen:', error);
+                hideUploadProgress();
+                throw new Error('No se pudo subir la imagen: ' + error.message);
+            }
+        }
+
+        function showUploadProgress(percent) {
+            const progress = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const uploadArea = document.getElementById('upload-area');
+            
+            if (progress && progressBar) {
+                progress.style.display = 'block';
+                progressBar.style.width = percent + '%';
+            }
+            
+            if (uploadArea) {
+                if (percent < 100) {
+                    uploadArea.classList.add('uploading');
+                } else {
+                    uploadArea.classList.remove('uploading');
+                    setTimeout(() => {
+                        progress.style.display = 'none';
+                    }, 1000);
+                }
+            }
+        }
+
+        function hideUploadProgress() {
+            const progress = document.getElementById('upload-progress');
+            const uploadArea = document.getElementById('upload-area');
+            
+            if (progress) progress.style.display = 'none';
+            if (uploadArea) uploadArea.classList.remove('uploading');
+        }
+
+        // =============================================
+        // FUNCIONES BACK4APP - MEJORADAS
+        // =============================================
+
+        // Crear clase Product si no existe
+        async function ensureProductClass() {
+            try {
+                const Product = Parse.Object.extend('Product');
+                const testProduct = new Product();
+                
+                testProduct.set('name', 'Producto de Prueba');
+                testProduct.set('price', 9.99);
+                testProduct.set('category', 'Prueba');
+                testProduct.set('stock', 10);
+                testProduct.set('description', 'Producto de prueba inicial');
+                testProduct.set('imageUrl', '');
+                testProduct.set('isActive', true);
+                
+                await testProduct.save();
+                await testProduct.destroy();
+                
+                console.log('✅ Clase Product configurada en Back4App');
+                return true;
+            } catch (error) {
+                console.log('✅ Clase Product ya existe en Back4App');
+                return true;
+            }
+        }
+
+        // Cargar productos desde Back4App
+        async function loadProductsFromBack4App() {
+            try {
+                showLoadingState();
+                
+                const Product = Parse.Object.extend('Product');
+                const query = new Parse.Query(Product);
+                query.equalTo('isActive', true);
+                query.ascending('createdAt');
+                
+                const results = await query.find();
+                const products = results.map(product => ({
+                    id: product.id,
+                    name: product.get('name'),
+                    price: product.get('price'),
+                    category: product.get('category'),
+                    stock: product.get('stock'),
+                    description: product.get('description'),
+                    imageUrl: product.get('imageUrl'),
+                    createdAt: product.get('createdAt')
+                }));
+                
+                window.appState.products = products;
+                localStorage.setItem('products_cache', JSON.stringify(products));
+                
+                console.log(`✅ ${products.length} productos cargados desde Back4App`);
+                hideLoadingState();
+                return products;
+                
+            } catch (error) {
+                console.error('❌ Error cargando productos:', error);
+                hideLoadingState();
+                
+                // Fallback a cache
+                try {
+                    const cached = localStorage.getItem('products_cache');
+                    if (cached) {
+                        window.appState.products = JSON.parse(cached);
+                        console.log('📦 Productos cargados desde cache');
+                        return window.appState.products;
+                    }
+                } catch (cacheError) {
+                    console.error('Error cargando cache:', cacheError);
+                }
+                
+                window.appState.products = [];
+                return [];
+            }
+        }
+
+        // Guardar producto en Back4App
+        async function saveProductToBack4App(productData, isEditing = false) {
+            try {
+                const Product = Parse.Object.extend('Product');
+                let product;
+                
+                if (isEditing && productData.id) {
+                    const query = new Parse.Query(Product);
+                    product = await query.get(productData.id);
+                } else {
+                    product = new Product();
+                }
+                
+                product.set('name', productData.name);
+                product.set('price', parseFloat(productData.price));
+                product.set('category', productData.category);
+                product.set('stock', parseInt(productData.stock) || 0);
+                product.set('description', productData.description || '');
+                product.set('imageUrl', productData.imageUrl || '');
+                product.set('isActive', true);
+                
+                const result = await product.save();
+                await loadProductsFromBack4App();
+                
+                console.log('✅ Producto guardado en Back4App:', result.id);
+                return result;
+                
+            } catch (error) {
+                console.error('❌ Error guardando producto:', error);
+                throw new Error(`No se pudo guardar el producto: ${error.message}`);
+            }
+        }
+
+        // Eliminar producto de Back4App
+        async function deleteProductFromBack4App(productId) {
+            try {
+                const Product = Parse.Object.extend('Product');
+                const query = new Parse.Query(Product);
+                const product = await query.get(productId);
+                
+                product.set('isActive', false);
+                await product.save();
+                await loadProductsFromBack4App();
+                
+                console.log('✅ Producto eliminado de Back4App:', productId);
+                return true;
+            } catch (error) {
+                console.error('❌ Error eliminando producto:', error);
+                throw new Error(`No se pudo eliminar el producto: ${error.message}`);
+            }
+        }
+
+        // =============================================
+        // SISTEMA DE SINCRONIZACIÓN EN TIEMPO REAL
+        // =============================================
+
+        // Emitir evento cuando los productos cambian
+        function emitProductsUpdate() {
+            console.log('🔄 Emitiendo actualización de productos...');
+            
+            // BroadcastChannel para comunicación entre pestañas
+            if (typeof BroadcastChannel !== 'undefined') {
+                try {
+                    const channel = new BroadcastChannel('tienda_updates');
+                    channel.postMessage({
+                        type: 'PRODUCTS_UPDATED',
+                        timestamp: Date.now(),
+                        source: 'admin'
+                    });
+                } catch (error) {
+                    console.log('BroadcastChannel no disponible');
+                }
+            }
+            
+            // localStorage como fallback
+            localStorage.setItem('last_products_update', Date.now().toString());
+            
+            // Evento personalizado
+            window.dispatchEvent(new CustomEvent('productsShouldReload'));
+            
+            // Mostrar notificación
+            showUpdateNotification();
+        }
+
+        // Escuchar actualizaciones
+        function setupUpdateListener() {
+            console.log('👂 Configurando listeners de actualización...');
+            
+            // BroadcastChannel entre pestañas
+            if (typeof BroadcastChannel !== 'undefined') {
+                try {
+                    const channel = new BroadcastChannel('tienda_updates');
+                    channel.addEventListener('message', (event) => {
+                        if (event.data.type === 'PRODUCTS_UPDATED') {
+                            console.log('🔄 Productos actualizados desde otra pestaña');
+                            loadAdminProducts();
+                            showUpdateNotification();
+                        }
+                    });
+                } catch (error) {
+                    console.log('BroadcastChannel no disponible');
+                }
+            }
+            
+            // localStorage como fallback
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'last_products_update') {
+                    console.log('🔄 Productos actualizados (localStorage)');
+                    loadAdminProducts();
+                    showUpdateNotification();
+                }
+            });
+            
+            // Evento personalizado
+            window.addEventListener('productsShouldReload', () => {
+                console.log('🔄 Recargando productos (evento interno)');
+                loadAdminProducts();
+            });
+        }
+
+        // Mostrar notificación de actualización
+        function showUpdateNotification() {
+            const notification = document.getElementById('update-notification');
+            if (notification) {
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // =============================================
+        // FUNCIONES DE AUTENTICACIÓN
+        // =============================================
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!username) {
+                showLoginAlert('Por favor ingresa el usuario');
+                document.getElementById('username').focus();
+                return;
+            }
+            
+            if (!password) {
+                showLoginAlert('Por favor ingresa la contraseña');
+                document.getElementById('password').focus();
+                return;
+            }
+            
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                window.appState.isLoggedIn = true;
+                localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('adminSession', Date.now().toString());
+                
+                showAdminPanel();
+                showAlert('Sesión iniciada correctamente', 'success');
+                adminElements.loginForm.reset();
+            } else {
+                showLoginAlert('Usuario o contraseña incorrectos');
+                const passwordInput = document.getElementById('password');
+                passwordInput.style.borderColor = '#dc3545';
+                passwordInput.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    passwordInput.style.animation = '';
+                    passwordInput.style.borderColor = '';
+                }, 500);
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+
+        function handleLogout() {
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                window.appState.isLoggedIn = false;
+                localStorage.removeItem('adminLoggedIn');
+                localStorage.removeItem('adminSession');
+                showLoginPanel();
+                showAlert('Sesión cerrada correctamente', 'success');
+            }
+        }
+
+        function checkExistingSession() {
+            const savedLogin = localStorage.getItem('adminLoggedIn');
+            const sessionTime = localStorage.getItem('adminSession');
+            
+            if (savedLogin === 'true' && sessionTime) {
+                const sessionAge = Date.now() - parseInt(sessionTime);
+                const maxSessionAge = 24 * 60 * 60 * 1000;
+                if (sessionAge < maxSessionAge) {
+                    window.appState.isLoggedIn = true;
+                    return true;
+                } else {
+                    localStorage.removeItem('adminLoggedIn');
+                    localStorage.removeItem('adminSession');
+                    showLoginAlert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+                }
+            }
+            return false;
+        }
+
+        function showAdminPanel() {
+            adminElements.loginSection.style.display = 'none';
+            adminElements.adminPanel.style.display = 'block';
+            loadAdminData();
+        }
+
+        function showLoginPanel() {
+            adminElements.loginSection.style.display = 'block';
+            adminElements.adminPanel.style.display = 'none';
+            adminElements.loginForm.reset();
+            setTimeout(() => {
+                document.getElementById('username').focus();
+            }, 100);
+        }
+
+        function showLoadingState() {
+            if (adminElements.loadingProducts) {
+                adminElements.loadingProducts.style.display = 'block';
+            }
+            if (adminElements.productsGridAdmin) {
+                adminElements.productsGridAdmin.style.display = 'none';
+            }
+        }
+
+        function hideLoadingState() {
+            if (adminElements.loadingProducts) {
+                adminElements.loadingProducts.style.display = 'none';
+            }
+            if (adminElements.productsGridAdmin) {
+                adminElements.productsGridAdmin.style.display = 'grid';
+            }
+        }
+
+        // =============================================
+        // FUNCIONES DE PRODUCTOS (ACTUALIZADAS)
+        // =============================================
+        function showProductForm() {
+            adminElements.productForm.style.display = 'block';
+            document.getElementById('form-title').textContent = 'Agregar Nuevo Producto';
+            adminElements.productFormData.reset();
+            adminElements.productId.value = '';
+            hideImagePreview();
+        }
+
+        function hideProductForm() {
+            adminElements.productForm.style.display = 'none';
+        }
+
+        async function handleProductSubmit(e) {
+            e.preventDefault();
+            
+            try {
+                const productData = {
+                    name: adminElements.productName.value,
+                    price: adminElements.productPrice.value,
+                    category: adminElements.productCategory.value,
+                    stock: adminElements.productStock.value,
+                    description: adminElements.productDescription.value,
+                    imageUrl: adminElements.productImageUrl.value || ''
+                };
+                
+                const isEditing = adminElements.productId.value !== '';
+                
+                // Guardar en Back4App
+                await saveProductToBack4App(productData, isEditing);
+                
+                // EMITIR ACTUALIZACIÓN PARA TODAS LAS PÁGINAS
+                emitProductsUpdate();
+                
+                hideProductForm();
+                showAlert('✅ Producto guardado correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error al guardar producto:', error);
+                showAlert('❌ Error al guardar el producto: ' + error.message, 'error');
+            }
+        }
+
+        async function editProduct(productId) {
+            try {
+                const Product = Parse.Object.extend('Product');
+                const query = new Parse.Query(Product);
+                const product = await query.get(productId);
+                
+                if (!product) {
+                    showAlert('Producto no encontrado', 'error');
+                    return;
+                }
+                
+                adminElements.productId.value = product.id;
+                adminElements.productName.value = product.get('name');
+                adminElements.productPrice.value = product.get('price');
+                adminElements.productCategory.value = product.get('category');
+                adminElements.productStock.value = product.get('stock');
+                adminElements.productDescription.value = product.get('description') || '';
+                
+                // MEJORA: Manejo mejorado de la imagen al editar
+                const imageUrl = product.get('imageUrl');
+                adminElements.productImageUrl.value = imageUrl || '';
+                
+                if (imageUrl && imageUrl.startsWith('http')) {
+                    // Es una URL de Back4App - mostrar directamente
+                    showImagePreview(imageUrl);
+                } else if (imageUrl && imageUrl.startsWith('data:')) {
+                    // Es base64 - mostrar directamente
+                    showImagePreview(imageUrl);
+                } else {
+                    // Sin imagen
+                    hideImagePreview();
+                }
+                
+                document.getElementById('form-title').textContent = 'Editar Producto';
+                adminElements.productForm.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error al cargar producto para editar:', error);
+                showAlert('Error al cargar el producto: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteProduct(productId) {
+            if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+                try {
+                    await deleteProductFromBack4App(productId);
+                    
+                    // EMITIR ACTUALIZACIÓN PARA TODAS LAS PÁGINAS
+                    emitProductsUpdate();
+                    
+                    showAlert('✅ Producto eliminado correctamente', 'success');
+                } catch (error) {
+                    console.error('Error al eliminar producto:', error);
+                    showAlert('❌ Error al eliminar el producto: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function loadAdminProducts() {
+            try {
+                await loadProductsFromBack4App();
+                renderAdminProducts();
+                updateAdminStats();
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+                showAlert('Error al cargar los productos: ' + error.message, 'error');
+            }
+        }
+
+        function renderAdminProducts() {
+            const productsGridAdmin = document.getElementById('products-grid-admin');
+            if (!productsGridAdmin) return;
+            
+            let html = '';
+            
+            if (window.appState.products.length === 0) {
+                html = `
+                    <div style="text-align: center; padding: 3rem; color: #666; grid-column: 1 / -1;">
+                        <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>No hay productos registrados</p>
+                        <button class="btn btn-whatsapp" onclick="showProductForm()">
+                            <i class="fas fa-plus"></i> Agregar Primer Producto
+                        </button>
+                    </div>
+                `;
+            } else {
+                window.appState.products.forEach(product => {
+                    // MEJORA: Manejo robusto de imágenes
+                    let imageContent = '';
+                    
+                    if (product.imageUrl && product.imageUrl !== '') {
+                        // Verificar si es una URL válida de Back4App
+                        if (product.imageUrl.startsWith('http')) {
+                            imageContent = `
+                                <img src="${product.imageUrl}" 
+                                     alt="${product.name}" 
+                                     style="width:100%; height:100%; object-fit:cover; border-radius:8px;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div style="display:none; width:100%; height:100%; align-items:center; justify-content:center; background:var(--light-gray); border-radius:8px;">
+                                    <i class="fas fa-box" style="font-size: 2rem; color: #666;"></i>
+                                </div>
+                            `;
+                        } else if (product.imageUrl.startsWith('data:')) {
+                            // Es una imagen en base64 (preview local)
+                            imageContent = `
+                                <img src="${product.imageUrl}" 
+                                     alt="${product.name}" 
+                                     style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                            `;
+                        } else {
+                            // URL inválida, mostrar icono por defecto
+                            imageContent = `
+                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--light-gray); border-radius:8px;">
+                                    <i class="fas fa-box" style="font-size: 2rem; color: #666;"></i>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        // Sin imagen
+                        imageContent = `
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--light-gray); border-radius:8px;">
+                                <i class="fas fa-box" style="font-size: 2rem; color: #666;"></i>
+                            </div>
+                        `;
+                    }
+                    
+                    html += `
+                        <div class="product-card-admin">
+                            <div class="product-image-admin">
+                                ${imageContent}
+                            </div>
+                            <h4>${product.name}</h4>
+                            <p style="color: var(--primary-color); font-weight: bold; font-size: 1.2rem;">
+                                $${product.price.toFixed(2)}
+                            </p>
+                            <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                ${product.category} • Stock: ${product.stock}
+                            </p>
+                            <p style="color: #888; font-size: 0.8rem;">
+                                ${product.description || 'Sin descripción'}
+                            </p>
+                            <div class="product-actions-admin">
+                                <button class="btn-sm btn-edit" onclick="editProduct('${product.id}')">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn-sm btn-delete" onclick="deleteProduct('${product.id}')">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            productsGridAdmin.innerHTML = html;
+        }
+
+        function updateAdminStats() {
+            const totalProducts = document.getElementById('total-products');
+            const productCount = document.getElementById('product-count');
+            const totalRevenue = document.getElementById('total-revenue');
+            
+            if (totalProducts) totalProducts.textContent = window.appState.products.length;
+            if (productCount) productCount.textContent = window.appState.products.length;
+            
+            if (totalRevenue) {
+                const revenue = window.appState.products.reduce((sum, product) => sum + (product.price * product.stock), 0);
+                totalRevenue.textContent = `$${revenue.toFixed(2)}`;
+            }
+        }
+
+        // =============================================
+        // FUNCIONES DE CONFIGURACIÓN
+        // =============================================
+        function handleWhatsAppConfig(e) {
+            e.preventDefault();
+            
+            const settings = {
+                whatsappNumber: adminElements.whatsappNumber.value,
+                businessName: adminElements.businessName.value,
+                whatsappWelcome: adminElements.whatsappWelcome.value,
+                whatsappOrder: adminElements.whatsappOrder.value
+            };
+            
+            localStorage.setItem('adminSettings', JSON.stringify(settings));
+            showAlert('Configuración de WhatsApp guardada correctamente', 'success');
+        }
+
+        function handleStoreConfig(e) {
+            e.preventDefault();
+            
+            const settings = {
+                storeName: adminElements.storeName.value,
+                storePhone: adminElements.storePhone.value,
+                storeDescription: adminElements.storeDescription.value
+            };
+            
+            localStorage.setItem('adminSettings', JSON.stringify(settings));
+            showAlert('Configuración de la tienda guardada correctamente', 'success');
+        }
+
+        function testWhatsAppConfig() {
+            const phone = adminElements.whatsappNumber.value || '5491112345678';
+            if (!phone) {
+                showAlert('Por favor ingresa un número de WhatsApp primero', 'error');
+                return;
+            }
+            
+            const message = encodeURIComponent('✅ Esta es una prueba de la configuración de WhatsApp. Tu tienda está correctamente configurada!');
+            const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+            
+            window.open(whatsappUrl, '_blank');
+            showAlert('Probando configuración de WhatsApp...', 'success');
+        }
+
+        // =============================================
+        // FUNCIONES UTILITARIAS
+        // =============================================
+        function showAlert(message, type) {
+            adminElements.alert.textContent = message;
+            adminElements.alert.className = `alert ${type}`;
+            adminElements.alert.style.display = 'block';
+            
+            setTimeout(() => {
+                adminElements.alert.style.display = 'none';
+            }, 4000);
+        }
+
+        function showLoginAlert(message) {
+            adminElements.loginAlert.textContent = message;
+            adminElements.loginAlert.className = 'alert error';
+            adminElements.loginAlert.style.display = 'block';
+            
+            setTimeout(() => {
+                adminElements.loginAlert.style.display = 'none';
+            }, 3000);
+        }
+
+        function loadAdminData() {
+            loadAdminProducts();
+            loadSettings();
+            setupTabs();
+        }
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('adminSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                
+                if (adminElements.whatsappNumber) adminElements.whatsappNumber.value = settings.whatsappNumber || '';
+                if (adminElements.businessName) adminElements.businessName.value = settings.businessName || '';
+                if (adminElements.storeName) adminElements.storeName.value = settings.storeName || '';
+                if (adminElements.storePhone) adminElements.storePhone.value = settings.storePhone || '';
+                if (adminElements.storeDescription) adminElements.storeDescription.value = settings.storeDescription || '';
+                if (adminElements.whatsappWelcome) adminElements.whatsappWelcome.value = settings.whatsappWelcome || '';
+                if (adminElements.whatsappOrder) adminElements.whatsappOrder.value = settings.whatsappOrder || '';
+            }
+        }
+
+        // =============================================
+        // UPLOAD DE IMÁGENES - COMPLETAMENTE CORREGIDO
+        // =============================================
+        function setupImageUpload() {
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('product-image-upload');
+            const preview = document.getElementById('image-preview');
+            const previewImg = document.getElementById('preview-img');
+            const removeBtn = document.getElementById('remove-image');
+            
+            if (!uploadArea || !fileInput) return;
+            
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleImageSelect(files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleImageSelect(e.target.files[0]);
+                }
+            });
+            
+            if (removeBtn) {
+                removeBtn.addEventListener('click', hideImagePreview);
+            }
+        }
+
+        async function handleImageSelect(file) {
+            if (!file.type.startsWith('image/')) {
+                showAlert('Por favor selecciona una imagen válida (JPG, PNG, GIF)', 'error');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('La imagen debe ser menor a 5MB', 'error');
+                return;
+            }
+            
+            try {
+                showAlert('Subiendo imagen...', 'success');
+                
+                // Mostrar preview inmediatamente
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    showImagePreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
+                
+                // Subir a Back4App
+                const imageUrl = await uploadImageToBack4App(file);
+                
+                // Guardar URL en el formulario
+                adminElements.productImageUrl.value = imageUrl;
+                
+                showAlert('✅ Imagen subida correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error procesando imagen:', error);
+                showAlert('Error al subir la imagen: ' + error.message, 'error');
+                hideImagePreview();
+            }
+        }
+
+        function showImagePreview(imageUrl) {
+            const preview = document.getElementById('image-preview');
+            const previewImg = document.getElementById('preview-img');
+            
+            if (preview && previewImg) {
+                previewImg.src = imageUrl;
+                preview.style.display = 'block';
+            }
+        }
+
+        function hideImagePreview() {
+            const preview = document.getElementById('image-preview');
+            if (preview) {
+                preview.style.display = 'none';
+                adminElements.productImageUrl.value = '';
+            }
+            hideUploadProgress();
+        }
+
+        // =============================================
+        // INICIALIZACIÓN MEJORADA
+        // =============================================
+        async function initAdmin() {
+            console.log('🔐 Inicializando panel admin con Back4App...');
+            
+            // Configurar Back4App
+            await ensureProductClass();
+            
+            // Configurar listeners de actualización
+            setupUpdateListener();
+            
+            if (checkExistingSession()) {
+                showAdminPanel();
+                console.log('✅ Sesión existente encontrada');
+            } else {
+                showLoginPanel();
+                console.log('🔒 Mostrando pantalla de login');
+            }
+            
+            // Event Listeners
+            if (adminElements.loginForm) {
+                adminElements.loginForm.addEventListener('submit', handleLogin);
+            }
+            
+            if (adminElements.logoutBtn) {
+                adminElements.logoutBtn.addEventListener('click', handleLogout);
+            }
+            
+            if (adminElements.addProductBtn) {
+                adminElements.addProductBtn.addEventListener('click', showProductForm);
+            }
+            
+            if (adminElements.cancelForm) {
+                adminElements.cancelForm.addEventListener('click', hideProductForm);
+            }
+            
+            if (adminElements.productFormData) {
+                adminElements.productFormData.addEventListener('submit', handleProductSubmit);
+            }
+            
+            if (adminElements.whatsappConfigForm) {
+                adminElements.whatsappConfigForm.addEventListener('submit', handleWhatsAppConfig);
+            }
+            
+            if (adminElements.storeConfigForm) {
+                adminElements.storeConfigForm.addEventListener('submit', handleStoreConfig);
+            }
+            
+            if (adminElements.testWhatsappBtn) {
+                adminElements.testWhatsappBtn.addEventListener('click', testWhatsAppConfig);
+            }
+            
+            setupImageUpload();
+            console.log('✅ Panel Admin con Back4App inicializado correctamente');
+        }
+
+        // =============================================
+        // INICIAR PANEL ADMIN
+        // =============================================
+        document.addEventListener('DOMContentLoaded', initAdmin);
+
+        // Hacer funciones disponibles globalmente
+        window.loadProductsFromBack4App = loadProductsFromBack4App;
+        window.saveProductToBack4App = saveProductToBack4App;
+        window.deleteProductFromBack4App = deleteProductFromBack4App;
+        window.uploadImageToBack4App = uploadImageToBack4App;
+        window.emitProductsUpdate = emitProductsUpdate;
+        window.editProduct = editProduct;
+        window.deleteProduct = deleteProduct;
+        window.showProductForm = showProductForm;
+    </script>
+</body>
+</html>
