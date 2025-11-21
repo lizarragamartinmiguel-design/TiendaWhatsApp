@@ -744,7 +744,7 @@
 </head>
 <body>
     <!-- Banner Promocional -->
-    <div class="promo-banner">
+    <div class="promo-banner" id="promo-banner">
         🎉 ¡Envío gratis en compras mayores a $50.000! 
         <a href="#products" class="btn btn-sm">Ver productos</a>
     </div>
@@ -832,7 +832,7 @@
                     <i class="fas fa-tags"></i>
                     Ver por Categoría
                 </a>
-                <a href="https://wa.me/5491112345678" class="quick-action-btn">
+                <a href="#" class="quick-action-btn" onclick="openWhatsAppContact()">
                     <i class="fab fa-whatsapp"></i>
                     Consultar por WhatsApp
                 </a>
@@ -1004,10 +1004,10 @@
                     <i class="fas fa-shopping-cart"></i>
                     Ver Mi Carrito
                 </button>
-                <a href="https://wa.me/5491112345678" class="btn btn-whatsapp btn-large">
+                <button class="btn btn-whatsapp btn-large" onclick="openWhatsAppContact()">
                     <i class="fab fa-whatsapp"></i>
                     Contactar por WhatsApp
-                </a>
+                </button>
             </div>
         </div>
     </section>
@@ -1022,7 +1022,7 @@
                     <div class="social-links">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" onclick="openWhatsAppContact()"><i class="fab fa-whatsapp"></i></a>
                         <a href="#"><i class="fab fa-tiktok"></i></a>
                     </div>
                 </div>
@@ -1050,8 +1050,8 @@
                 <div class="footer-section">
                     <h3>Contacto</h3>
                     <ul class="footer-links">
-                        <li><i class="fas fa-phone"></i> +1 234 567 890</li>
-                        <li><i class="fab fa-whatsapp"></i> +1 234 567 891</li>
+                        <li><i class="fas fa-phone"></i> +54 9 3624 366733</li>
+                        <li><i class="fab fa-whatsapp"></i> +54 9 3624 366733</li>
                         <li><i class="fas fa-envelope"></i> info@tiendawhats.com</li>
                         <li><i class="fas fa-map-marker-alt"></i> Ciudad, País</li>
                     </ul>
@@ -1112,11 +1112,91 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/parse/dist/parse.min.js"></script>
     <script>
-        // Configuración Back4App con tus credenciales reales
+        // =============================================
+        // CONFIGURACIÓN WHATSAPP - SINCRONIZACIÓN CON ADMIN
+        // =============================================
+
+        function loadWhatsAppConfig() {
+            const CORRECT_NUMBER = '5493624366733';
+            
+            try {
+                console.log('📱 Cargando configuración WhatsApp...');
+                
+                // Prioridad 1: Configuración del admin
+                const storeSettings = localStorage.getItem('storeSettings');
+                const paymentNumber = localStorage.getItem('paymentWhatsAppNumber');
+                
+                if (paymentNumber && paymentNumber !== '5491112345678') {
+                    console.log('✅ Usando número del admin:', paymentNumber);
+                    return paymentNumber;
+                }
+                
+                if (storeSettings) {
+                    const config = JSON.parse(storeSettings);
+                    if (config.whatsappNumber && config.whatsappNumber !== '5491112345678') {
+                        console.log('✅ Usando storeSettings:', config.whatsappNumber);
+                        return config.whatsappNumber;
+                    }
+                }
+                
+                // Prioridad 2: Configuración legacy
+                const whatsappConfig = localStorage.getItem('whatsappConfig');
+                if (whatsappConfig) {
+                    const config = JSON.parse(whatsappConfig);
+                    if (config.whatsappNumber && config.whatsappNumber !== '5491112345678') {
+                        console.log('✅ Usando whatsappConfig:', config.whatsappNumber);
+                        return config.whatsappNumber;
+                    }
+                }
+                
+                // Fallback al número correcto
+                console.log('🔄 Usando número por defecto:', CORRECT_NUMBER);
+                return CORRECT_NUMBER;
+                
+            } catch (error) {
+                console.error('❌ Error cargando configuración:', error);
+                return '5493624366733';
+            }
+        }
+
+        function openWhatsAppContact() {
+            const phoneNumber = loadWhatsAppConfig();
+            const message = encodeURIComponent('¡Hola! Me gustaría obtener más información sobre sus productos.');
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function debugWhatsAppConfig() {
+            console.log('🐛 DEBUG WhatsApp Configuration:');
+            console.log('- storeSettings:', localStorage.getItem('storeSettings'));
+            console.log('- paymentWhatsAppNumber:', localStorage.getItem('paymentWhatsAppNumber'));
+            console.log('- whatsappConfig:', localStorage.getItem('whatsappConfig'));
+            console.log('- Número actual:', loadWhatsAppConfig());
+            
+            // Mostrar en UI si hay un elemento debug
+            const debugInfo = document.getElementById('debug-info');
+            if (debugInfo) {
+                debugInfo.innerHTML = `
+                    <strong>Debug WhatsApp:</strong><br>
+                    storeSettings: ${localStorage.getItem('storeSettings')}<br>
+                    paymentWhatsAppNumber: ${localStorage.getItem('paymentWhatsAppNumber')}<br>
+                    Número detectado: ${loadWhatsAppConfig()}
+                `;
+                debugInfo.style.display = 'block';
+            }
+        }
+
+        // =============================================
+        // CONFIGURACIÓN BACK4APP
+        // =============================================
+
         Parse.initialize("vRn25suEgknHSSZSALpSXXWd0I2EPcIFGBPBFODW", "UxlCa92gr2i1hDu8pBuJMeuanXbhDpVjTMvMzTl9");
         Parse.serverURL = 'https://parseapi.back4app.com/';
 
-        // Estado de la aplicación
+        // =============================================
+        // ESTADO DE LA APLICACIÓN
+        // =============================================
+
         let appState = {
             products: [],
             filteredProducts: [],
@@ -1124,7 +1204,12 @@
             currentCategory: 'all',
             searchTerm: '',
             sortBy: 'name',
-            useStockImages: true // Por defecto usar imágenes de stock
+            useStockImages: true,
+            shippingConfig: {
+                cost: 5000,
+                freeShippingThreshold: 50000,
+                enabled: true
+            }
         };
 
         // Base de datos de imágenes de stock por categoría
@@ -1161,7 +1246,10 @@
             ]
         };
 
-        // Elementos DOM
+        // =============================================
+        // ELEMENTOS DOM
+        // =============================================
+
         const elements = {
             productsGrid: document.getElementById('products-grid'),
             loadingProducts: document.getElementById('loading-products'),
@@ -1185,21 +1273,36 @@
             categoryCards: document.querySelectorAll('.category-card'),
             menuToggle: document.getElementById('menu-toggle'),
             mobileMenu: document.getElementById('mobile-menu'),
-            menuClose: document.getElementById('menu-close')
+            menuClose: document.getElementById('menu-close'),
+            promoBanner: document.getElementById('promo-banner')
         };
 
-        // Inicializar aplicación
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Inicializando aplicación...');
+            console.log('🏪 Inicializando tienda...');
             initApp();
             setupEventListeners();
         });
 
         async function initApp() {
-            console.log('Cargando productos...');
+            console.log('🔧 Inicializando aplicación...');
+            
+            // Cargar configuración de WhatsApp primero
+            const whatsappNumber = loadWhatsAppConfig();
+            console.log('📞 WhatsApp configurado:', whatsappNumber);
+            
+            // Cargar configuración de envío
+            loadShippingConfig();
+            
+            // Luego cargar productos y carrito
             await loadProducts();
             loadCartFromStorage();
             updateCartUI();
+            
+            console.log('✅ Tienda inicializada correctamente');
         }
 
         function setupEventListeners() {
@@ -1239,10 +1342,57 @@
             elements.debugInfo.style.display = elements.debugInfo.style.display === 'none' ? 'block' : 'none';
         }
 
-        // ===== FUNCIONES OPTIMIZADAS PARA IMÁGENES =====
+        // =============================================
+        // CONFIGURACIÓN DE ENVÍO - CORREGIDA Y OPTIMIZADA
+        // =============================================
+
+        function loadShippingConfig() {
+            console.log('🚚 Cargando configuración de envío...');
+            
+            try {
+                const storeSettings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+
+                appState.shippingConfig.cost = parseInt(storeSettings.shippingCost) || 5000;
+                appState.shippingConfig.freeShippingThreshold = parseInt(storeSettings.freeShippingThreshold) || 50000;
+                appState.shippingConfig.enabled = storeSettings.shippingEnabled !== undefined ? storeSettings.shippingEnabled : true;
+
+                console.log('📦 Envío habilitado:', appState.shippingConfig.enabled);
+                updatePromoBanner();
+            } catch (e) {
+                console.error(e);
+                appState.shippingConfig.enabled = true;
+            }
+        }
+
+        function updatePromoBanner() {
+            if (!appState.shippingConfig.enabled) {
+                elements.promoBanner.style.display = 'none';
+                return;
+            }
+
+            const threshold = appState.shippingConfig.freeShippingThreshold;
+            const formattedThreshold = threshold.toLocaleString();
+            
+            elements.promoBanner.innerHTML = `
+                🎉 ¡Envío gratis en compras mayores a $${formattedThreshold}! 
+                <a href="#products" class="btn btn-sm">Ver productos</a>
+            `;
+        }
+
+        function calculateShipping(subtotal) {
+            if (!appState.shippingConfig.enabled) return 0;
+
+            const { cost, freeShippingThreshold } = appState.shippingConfig;
+            return subtotal >= freeShippingThreshold ? 0 : cost;
+        }
+
+        // =============================================
+        // FUNCIONES DE PRODUCTOS - CORREGIDAS
+        // =============================================
+
         async function loadProducts() {
             try {
-                console.log('Iniciando carga de productos...');
+                console.log('📦 Iniciando carga de productos...');
                 
                 // Mostrar loading
                 elements.loadingProducts.style.display = 'block';
@@ -1256,32 +1406,29 @@
                 // Solo productos activos
                 query.equalTo('isActive', true);
                 
-                console.log('Ejecutando query...');
+                console.log('🔍 Ejecutando query...');
                 const results = await query.find();
-                console.log('Productos encontrados:', results.length);
+                console.log('✅ Productos encontrados:', results.length);
                 
                 if (results.length === 0) {
-                    console.log('No se encontraron productos en la base de datos');
+                    console.log('ℹ️ No se encontraron productos en la base de datos');
                     elements.noProducts.style.display = 'block';
                     elements.loadingProducts.style.display = 'none';
                     return;
                 }
                 
                 appState.products = results.map((product, index) => {
-                    console.log('Procesando producto:', product.id, product.get('name'));
+                    console.log('🔄 Procesando producto:', product.id, product.get('name'));
                     
                     // CORRECCIÓN: Manejo seguro de la categoría
                     let categoryName = 'Sin categoría';
                     const category = product.get('category');
                     
                     if (category && typeof category.get === 'function') {
-                        // Si es un objeto Parse (Pointer)
                         categoryName = category.get('name') || 'Sin categoría';
                     } else if (typeof category === 'string') {
-                        // Si es un string directo
                         categoryName = category;
                     } else if (category && category.name) {
-                        // Si es un objeto con propiedad name
                         categoryName = category.name;
                     }
 
@@ -1300,18 +1447,17 @@
                         isActive: product.get('isActive') || true,
                         sku: product.get('sku') || '',
                         features: product.get('features') || [],
-                        rawImageData: product.get('image') // Guardar datos crudos para diagnóstico
+                        rawImageData: product.get('image')
                     };
                 });
 
-                console.log('Productos procesados:', appState.products);
+                console.log('🎯 Productos procesados:', appState.products.length);
                 appState.filteredProducts = [...appState.products];
                 renderProducts();
                 
             } catch (error) {
-                console.error('Error detallado al cargar productos:', error);
+                console.error('❌ Error detallado al cargar productos:', error);
                 
-                // Mostrar información detallada del error
                 let errorMessage = 'Error desconocido';
                 let debugInfo = '';
                 
@@ -1381,67 +1527,7 @@
             elements.noProducts.style.display = 'none';
         }
 
-        function renderProducts() {
-            if (appState.filteredProducts.length === 0) {
-                elements.noProducts.style.display = 'block';
-                elements.productsGrid.style.display = 'none';
-                elements.errorProducts.style.display = 'none';
-                return;
-            }
-
-            elements.productsGrid.style.display = 'grid';
-            elements.noProducts.style.display = 'none';
-            elements.errorProducts.style.display = 'none';
-
-            const productsHTML = appState.filteredProducts.map(product => `
-                <div class="product-card ${product.stock === 0 ? 'out-of-stock' : ''}">
-                    ${product.stock < 10 && product.stock > 0 ? '<span class="product-badge stock-low">¡Últimas unidades!</span>' : ''}
-                    ${product.originalPrice && product.originalPrice > product.price ? 
-                        '<span class="product-badge" style="background: #2ed573;">¡Oferta!</span>' : ''}
-                    
-                    <div class="product-image">
-                        ${getProductImageHTML(product)}
-                        <div class="product-overlay">
-                            <button class="btn btn-whatsapp" onclick="addToCart('${product.id}')" 
-                                    ${product.stock === 0 ? 'disabled' : ''}>
-                                <i class="fas fa-cart-plus"></i>
-                                ${product.stock === 0 ? 'Sin Stock' : 'Agregar al Carrito'}
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="product-info">
-                        <h3 class="product-title">${product.name}</h3>
-                        <p class="product-description">${product.description.substring(0, 80)}...</p>
-                        
-                        <div class="product-price">
-                            ${product.originalPrice && product.originalPrice > product.price ? 
-                                `<span class="original-price">$${product.originalPrice.toLocaleString()}</span>` : ''}
-                            <span class="current-price">$${product.price.toLocaleString()}</span>
-                        </div>
-                        
-                        <div class="product-meta">
-                            <span class="product-category">
-                                <i class="fas fa-tag"></i> ${product.category}
-                            </span>
-                            <span class="product-stock ${product.stock < 5 ? 'stock-low' : ''}">
-                                <i class="fas fa-box"></i> 
-                                ${product.stock === 0 ? 'Agotado' : `${product.stock} disponibles`}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            elements.productsGrid.innerHTML = productsHTML;
-            
-            // Precargar imágenes después de renderizar
-            preloadImages();
-            
-            console.log('Productos renderizados:', appState.filteredProducts.length);
-        }
-
-        // Función optimizada para manejar imágenes
+        // CORRECCIÓN: Función getProductImageHTML corregida
         function getProductImageHTML(product) {
             // Si es placeholder, mostrar icono directamente
             if (product.image === 'img/placeholder.jpg' || !product.image) {
@@ -1467,13 +1553,81 @@
             `;
         }
 
+        // CORRECCIÓN: Función renderProducts corregida
+        function renderProducts() {
+            if (appState.filteredProducts.length === 0) {
+                elements.noProducts.style.display = 'block';
+                elements.productsGrid.style.display = 'none';
+                elements.errorProducts.style.display = 'none';
+                return;
+            }
+
+            elements.productsGrid.style.display = 'grid';
+            elements.noProducts.style.display = 'none';
+            elements.errorProducts.style.display = 'none';
+
+            const productsHTML = appState.filteredProducts.map(product => {
+                // CORRECCIÓN: Variables definidas correctamente
+                const hasStock = product.stock > 0;
+                const isLowStock = product.stock < 10 && product.stock > 0;
+                const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+                const description = product.description ? product.description.substring(0, 80) + '...' : 'Sin descripción';
+                
+                return `
+                    <div class="product-card ${!hasStock ? 'out-of-stock' : ''}">
+                        ${isLowStock ? '<span class="product-badge stock-low">¡Últimas unidades!</span>' : ''}
+                        ${hasDiscount ? '<span class="product-badge" style="background: #2ed573;">¡Oferta!</span>' : ''}
+                        
+                        <div class="product-image">
+                            ${getProductImageHTML(product)}
+                            <div class="product-overlay">
+                                <button class="btn btn-whatsapp" onclick="addToCart('${product.id}')" 
+                                        ${!hasStock ? 'disabled' : ''}>
+                                    <i class="fas fa-cart-plus"></i>
+                                    ${!hasStock ? 'Sin Stock' : 'Agregar al Carrito'}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <h3 class="product-title">${product.name}</h3>
+                            <p class="product-description">${description}</p>
+                            
+                            <div class="product-price">
+                                ${hasDiscount ? 
+                                    `<span class="original-price">$${product.originalPrice.toLocaleString()}</span>` : ''}
+                                <span class="current-price">$${product.price.toLocaleString()}</span>
+                            </div>
+                            
+                            <div class="product-meta">
+                                <span class="product-category">
+                                    <i class="fas fa-tag"></i> ${product.category}
+                                </span>
+                                <span class="product-stock ${product.stock < 5 ? 'stock-low' : ''}">
+                                    <i class="fas fa-box"></i> 
+                                    ${!hasStock ? 'Agotado' : `${product.stock} disponibles`}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            elements.productsGrid.innerHTML = productsHTML;
+            
+            // Precargar imágenes después de renderizar
+            preloadImages();
+            
+            console.log('🎨 Productos renderizados:', appState.filteredProducts.length);
+        }
+
         function handleImageError(img) {
             img.style.display = 'none';
             const placeholder = img.nextElementSibling;
             if (placeholder) {
                 placeholder.style.display = 'flex';
             }
-            console.error('Error cargando imagen:', img.src);
+            console.error('❌ Error cargando imagen:', img.src);
         }
 
         // Precargar imágenes para evitar parpadeo
@@ -1485,7 +1639,10 @@
             });
         }
 
-        // ===== FUNCIONES DE FILTROS =====
+        // =============================================
+        // FUNCIONES DE FILTROS
+        // =============================================
+
         function handleSearch(e) {
             appState.searchTerm = e.target.value.toLowerCase();
             applyFilters();
@@ -1523,7 +1680,7 @@
             if (appState.searchTerm) {
                 filtered = filtered.filter(product =>
                     product.name.toLowerCase().includes(appState.searchTerm) ||
-                    product.description.toLowerCase().includes(appState.searchTerm) ||
+                    (product.description && product.description.toLowerCase().includes(appState.searchTerm)) ||
                     product.category.toLowerCase().includes(appState.searchTerm)
                 );
             }
@@ -1566,7 +1723,10 @@
             applyFilters();
         }
 
-        // ===== FUNCIONES OPTIMIZADAS DEL CARRITO =====
+        // =============================================
+        // FUNCIONES OPTIMIZADAS DEL CARRITO
+        // =============================================
+
         function generateCartId() {
             return 'cart_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
@@ -1603,7 +1763,7 @@
                 appState.cart.push({
                     ...product,
                     quantity: 1,
-                    cartId: generateCartId() // ID único para el item del carrito
+                    cartId: generateCartId()
                 });
             }
             
@@ -1731,14 +1891,19 @@
                 `).join('');
             }
             
-            // Actualizar totales
+            // Actualizar totales con configuración de envío dinámica
             const subtotal = appState.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const shipping = subtotal > 50000 ? 0 : 5000; // Envío gratis sobre $50,000
+            const shipping = calculateShipping(subtotal);
             const total = subtotal + shipping;
             
             elements.cartSubtotal.textContent = subtotal.toLocaleString();
             elements.cartShipping.textContent = shipping.toLocaleString();
             elements.cartTotal.textContent = total.toLocaleString();
+            
+            // Resaltar envío gratis si aplica
+            if (shipping === 0 && subtotal > 0) {
+                elements.cartShipping.innerHTML = `<span style="color: #2ed573;">¡GRATIS!</span>`;
+            }
         }
 
         function loadCartFromStorage() {
@@ -1746,15 +1911,19 @@
             if (savedCart) {
                 try {
                     appState.cart = JSON.parse(savedCart);
+                console.log('📥 Carrito cargado desde localStorage:', appState.cart.length, 'items');
                 } catch (error) {
-                    console.error('Error loading cart from storage:', error);
+                    console.error('❌ Error loading cart from storage:', error);
                     appState.cart = [];
                 }
+            } else {
+                console.log('🛒 No hay carrito guardado en localStorage');
             }
         }
 
         function saveCartToStorage() {
             localStorage.setItem('tiendawhats-cart', JSON.stringify(appState.cart));
+            console.log('💾 Carrito guardado en localStorage:', appState.cart.length, 'items');
         }
 
         function openCart() {
@@ -1769,13 +1938,30 @@
             document.body.style.overflow = '';
         }
 
+        // =============================================
+        // FUNCIÓN DE CHECKOUT WHATSAPP ACTUALIZADA
+        // =============================================
+
         function checkoutWhatsApp() {
             if (appState.cart.length === 0) {
                 showNotification('Tu carrito está vacío', 'error');
                 return;
             }
             
-            const phoneNumber = "5491112345678"; // Reemplazar con tu número real
+            console.log('🛒 Iniciando checkout...');
+            
+            // Cargar configuración actualizada de WhatsApp
+            const phoneNumber = loadWhatsAppConfig();
+            
+            if (!phoneNumber || phoneNumber === '5491112345678') {
+                showNotification('Error: Número de WhatsApp no configurado', 'error');
+                console.error('❌ Número incorrecto:', phoneNumber);
+                return;
+            }
+            
+            console.log('📞 Enviando pedido a:', phoneNumber);
+            
+            // Crear mensaje detallado con información de envío
             let message = "¡Hola! Quiero hacer el siguiente pedido:%0A%0A";
             
             appState.cart.forEach((item, index) => {
@@ -1783,16 +1969,42 @@
             });
             
             const subtotal = appState.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const shipping = subtotal > 50000 ? 0 : 5000;
+            const shipping = calculateShipping(subtotal);
             const total = subtotal + shipping;
             
             message += `%0ASubtotal: $${subtotal.toLocaleString()}%0A`;
-            message += `Envío: $${shipping.toLocaleString()}%0A`;
+            // Si el envío está desactivado lo indicamos
+            if (!appState.shippingConfig.enabled) {
+                message += `Envío: $0 (a coordinar con el vendedor)%0A`;
+            } else {
+                message += `Envío: $${shipping.toLocaleString()}${shipping === 0 ? ' (¡GRATIS!)' : ''}%0A`;
+            }
             message += `*Total: $${total.toLocaleString()}*%0A%0A`;
+            
+            // Agregar información de envío gratis si aplica
+            if (shipping === 0) {
+                message += `🎉 ¡Aproveché el envío gratis!%0A%0A`;
+            } else if (appState.shippingConfig.enabled && shipping > 0) {
+                const remaining = appState.shippingConfig.freeShippingThreshold - subtotal;
+                if (remaining > 0) {
+                    message += `💡 Me faltan $${remaining.toLocaleString()} para envío gratis%0A%0A`;
+                }
+            }
+            
             message += "¡Gracias!";
             
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            
+            console.log('🔗 URL generada:', whatsappUrl);
+            
+            // Abrir en nueva pestaña
             window.open(whatsappUrl, '_blank');
+            
+            // Limpiar carrito después del envío
+            setTimeout(() => {
+                clearCart();
+                showNotification('Pedido enviado correctamente a WhatsApp');
+            }, 1000);
         }
 
         function showNotification(text, type = 'success') {
