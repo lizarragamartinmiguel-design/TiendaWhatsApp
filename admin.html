@@ -3,11 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - Tienda WhatsApp</title>
+    <title>Panel Admin - DISTRIMAX</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         /* Estilos del Panel Admin */
+        :root {
+            --primary-color: #25D366;
+            --secondary-color: #128C7E;
+            --accent-color: #075E54;
+            --text-color: #333;
+            --light-gray: #f8f9fa;
+            --border-color: #ddd;
+            --white: #ffffff;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-gray);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            background: var(--white);
+            box-shadow: var(--shadow);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-whatsapp {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-whatsapp:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
         .admin-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -135,10 +242,6 @@
             display: flex;
             gap: 1rem;
             margin-top: 2rem;
-        }
-
-        .btn-full {
-            width: 100%;
         }
 
         .btn-admin {
@@ -345,7 +448,7 @@
         <div class="container">
             <div class="logo">
                 <i class="fas fa-cog"></i>
-                <span>Panel Admin - Tienda WhatsApp</span>
+                <span>Panel Admin - DISTRIMAX</span>
             </div>
             <nav class="nav">
                 <a href="index.html" class="btn-admin">
@@ -368,12 +471,12 @@
         <form id="login-form">
             <div class="form-group">
                 <label for="username">Usuario:</label>
-                <input type="text" id="username" name="username" required placeholder="Ingresa tu usuario">
+                <input type="text" id="username" name="username" required placeholder="Ingresa tu usuario" value="admin">
             </div>
         
             <div class="form-group">
                 <label for="password">Contraseña:</label>
-                <input type="password" id="password" name="password" required placeholder="Ingresa tu contraseña">
+                <input type="password" id="password" name="password" required placeholder="Ingresa tu contraseña" value="admin123">
             </div>
          
             <button type="submit" class="btn btn-whatsapp btn-full">
@@ -381,15 +484,7 @@
                 Iniciar Sesión
             </button>
         </form>
-        
-        <!-- Información de acceso - Credenciales ocultas por seguridad -->
-        <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid var(--primary-color);">
-            <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">
-                <i class="fas fa-shield-alt"></i> Acceso Administrativo
-            </h4>
-            <p style="margin: 0.25rem 0;">Contacta al administrador para obtener las credenciales de acceso.</p>
-            <small style="color: #666;">Acceso restringido al personal autorizado</small>
-        </div>
+
     </div>
 
     <!-- Admin Panel -->
@@ -450,7 +545,7 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
                             <label for="product-name">Nombre del Producto:*</label>
-                            <input type="text" id="product-name" required placeholder="Ej: Camiseta Básica">
+                            <input type="text" id="product-name" required placeholder="Ej: Vasos descartables">
                         </div>
                         
                         <div class="form-group">
@@ -463,12 +558,9 @@
                         <div class="form-group">
                             <label for="product-category">Categoría:</label>
                             <select id="product-category">
-                                <option value="Ropa">Ropa</option>
-                                <option value="Calzado">Calzado</option>
-                                <option value="Accesorios">Accesorios</option>
-                                <option value="Electrónicos">Electrónicos</option>
+                                <option value="Descartables">Descartables</option>
                                 <option value="Hogar">Hogar</option>
-                                <option value="Otros">Otros</option>
+                                <option value="Accesorios">Accesorios</option>
                             </select>
                         </div>
                         
@@ -544,7 +636,7 @@
                         <div class="form-group">
                             <label for="business-name">Nombre del Negocio:</label>
                             <input type="text" id="business-name" 
-                                   placeholder="Ej: Mi Tienda Online">
+                                   placeholder="Ej: DISTRIMAX">
                         </div>
                     </div>
 
@@ -552,7 +644,7 @@
                         <div class="form-group">
                             <label for="whatsapp-welcome">Mensaje de Bienvenida:</label>
                             <textarea id="whatsapp-welcome" rows="3" 
-                                      placeholder="¡Hola! Bienvenido a nuestra tienda. ¿En qué puedo ayudarte?"></textarea>
+                                      placeholder="¡Hola! Bienvenido a DISTRIMAX. ¿En qué puedo ayudarte?"></textarea>
                         </div>
                         
                         <div class="form-group">
@@ -630,7 +722,7 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                         <div class="form-group">
                             <label for="store-name">Nombre de la Tienda:</label>
-                            <input type="text" id="store-name" value="Tienda WhatsApp" required>
+                            <input type="text" id="store-name" value="DISTRIMAX - Descartables y más" required>
                         </div>
                         
                         <div class="form-group">
@@ -641,7 +733,7 @@
                     
                     <div class="form-group">
                         <label for="store-description">Descripción:</label>
-                        <textarea id="store-description" rows="2">Tu tienda online integrada con WhatsApp</textarea>
+                        <textarea id="store-description" rows="2">Tu tienda online de confianza en productos descartables y más.</textarea>
                     </div>
 
                     <div class="form-actions">
@@ -653,24 +745,6 @@
                 </form>
             </div>
 
-            <div class="config-section" style="border-left-color: #dc3545;">
-                <h3><i class="fas fa-database"></i> Información del Sistema</h3>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <div>
-                        <p><strong>Base de datos:</strong> Back4App (Parse)</p>
-                        <p><strong>Productos activos:</strong> <span id="product-count">0</span></p>
-                        <p><strong>Versión:</strong> 2.0</p>
-                    </div>
-                    <div>
-                        <p><strong>Frontend:</strong> Netlify</p>
-                        <p><strong>WhatsApp integrado:</strong> Sí</p>
-                        <p><strong>Estado:</strong> <span style="color: var(--primary-color);">● En línea</span></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Configuración de Seguridad -->
             <div class="config-section" style="border-left-color: #ffc107;">
                 <h3><i class="fas fa-shield-alt"></i> Configuración de Seguridad</h3>
                 
@@ -682,7 +756,7 @@
                 <div class="form-group">
                     <label for="admin-password">Nueva Contraseña:</label>
                     <input type="password" id="admin-password" placeholder="Dejar vacío para no cambiar">
-                    <small style="color: #666;">Contraseña actual: [Configurada]</small>
+                    <small style="color: #666;">Contraseña actual: admin123</small>
                 </div>
 
                 <div class="form-actions">
@@ -703,490 +777,10 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts ACTUALIZADOS -->
     <script src="https://unpkg.com/parse/dist/parse.min.js"></script>
-    <script>
-        // =============================================
-        // ADMIN.JS - CÓDIGO COMPLETO INTEGRADO Y CORREGIDO
-        // =============================================
-        
-        Parse.initialize("vRn25suEgknHSSZSALpSXXWd0I2EPcIFGBPBFODW", "UxlCa92gr2i1hDu8pBuJMeuanXbhDpVjTMvMzTl9");
-        Parse.serverURL = 'https://parseapi.back4app.com/';
-
-        const admin = {
-            init: function() {
-                console.log('🚀 Inicializando panel admin...');
-                this.checkAuth();
-                this.setupEventListeners();
-                this.loadConfigurations();
-                this.loadProducts();
-            },
-
-            checkAuth: function() {
-                const user = localStorage.getItem('adminUser');
-                if (user) {
-                    this.showAdminPanel();
-                } else {
-                    this.showLoginForm();
-                }
-            },
-
-            setupEventListeners: function() {
-                // Login
-                document.getElementById('login-form').addEventListener('submit', (e) => this.handleLogin(e));
-                document.getElementById('logout-btn').addEventListener('click', () => this.handleLogout());
-
-                // Tabs
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => this.switchTab(e.target.getAttribute('data-tab')));
-                });
-
-                // Productos
-                document.getElementById('add-product-btn').addEventListener('click', () => this.showProductForm());
-                document.getElementById('cancel-form').addEventListener('click', () => this.hideProductForm());
-                document.getElementById('product-form-data').addEventListener('submit', (e) => this.handleProductSubmit(e));
-
-                // Configuraciones
-                document.getElementById('whatsapp-config-form').addEventListener('submit', (e) => this.saveWhatsAppConfig(e));
-                document.getElementById('shipping-config-form').addEventListener('submit', (e) => this.saveShippingConfig(e));
-                document.getElementById('store-config-form').addEventListener('submit', (e) => this.saveStoreConfig(e));
-                document.getElementById('update-password-btn').addEventListener('click', () => this.updatePassword());
-
-                // Upload de imágenes
-                this.setupImageUpload();
-
-                // Test WhatsApp
-                document.getElementById('test-whatsapp-btn').addEventListener('click', () => this.testWhatsAppConfig());
-            },
-
-            handleLogin: function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-
-                console.log('🔐 Intentando login:', username);
-
-                // Credenciales por defecto
-                if (username === 'admin' && password === 'admin123') {
-                    const user = { username: 'admin', loginTime: new Date().toISOString() };
-                    localStorage.setItem('adminUser', JSON.stringify(user));
-                    this.showAdminPanel();
-                    this.showAlert('✅ Sesión iniciada correctamente', 'success');
-                } else {
-                    this.showAlert('❌ Usuario o contraseña incorrectos', 'error');
-                }
-            },
-
-            handleLogout: function() {
-                localStorage.removeItem('adminUser');
-                this.showLoginForm();
-                this.showAlert('🔒 Sesión cerrada correctamente', 'success');
-            },
-
-            showLoginForm: function() {
-                document.getElementById('login-section').style.display = 'block';
-                document.getElementById('admin-panel').style.display = 'none';
-            },
-
-            showAdminPanel: function() {
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-                this.showAlert('👋 ¡Bienvenido al panel de administración!', 'success');
-            },
-
-            switchTab: function(tabName) {
-                // Actualizar tabs activos
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.classList.remove('active');
-                    if (tab.getAttribute('data-tab') === tabName) {
-                        tab.classList.add('active');
-                    }
-                });
-
-                // Mostrar contenido del tab
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                    if (content.id === tabName) {
-                        content.classList.add('active');
-                    }
-                });
-            },
-
-            // CONFIGURACIÓN WHATSAPP - CORREGIDA PARA SINCRONIZACIÓN
-            saveWhatsAppConfig: function(e) {
-                e.preventDefault();
-                
-                const config = {
-                    whatsappNumber: document.getElementById('whatsapp-number').value.trim(),
-                    businessName: document.getElementById('business-name').value.trim(),
-                    whatsappWelcome: document.getElementById('whatsapp-welcome').value.trim(),
-                    whatsappOrder: document.getElementById('whatsapp-order').value.trim()
-                };
-
-                // Validar número de WhatsApp
-                if (!config.whatsappNumber) {
-                    this.showAlert('❌ El número de WhatsApp es obligatorio', 'error');
-                    return;
-                }
-
-                // CORRECCIÓN: Guardar en localStorage para sincronización con index.html
-                localStorage.setItem('paymentWhatsAppNumber', config.whatsappNumber);
-                localStorage.setItem('whatsappConfig', JSON.stringify(config));
-
-                // CORRECCIÓN: También guardar en storeSettings para compatibilidad
-                const storeSettings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
-                storeSettings.whatsappNumber = config.whatsappNumber;
-                localStorage.setItem('storeSettings', JSON.stringify(storeSettings));
-
-                this.showAlert('✅ Configuración de WhatsApp guardada correctamente', 'success');
-                this.showNotification('📱 WhatsApp configurado: ' + config.whatsappNumber);
-                
-                console.log('💾 Configuración WhatsApp guardada:', config);
-            },
-
-            // CONFIGURACIÓN ENVÍOS - CORREGIDA PARA SINCRONIZACIÓN
-            saveShippingConfig: function(e) {
-                e.preventDefault();
-                
-                const config = {
-                    shippingCost: parseInt(document.getElementById('shipping-cost').value) || 0,
-                    freeShippingThreshold: parseInt(document.getElementById('free-shipping-threshold').value) || 0,
-                    shippingEnabled: document.getElementById('shipping-enabled').checked
-                };
-
-                // CORRECCIÓN: Guardar en storeSettings para sincronización con index.html
-                const storeSettings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
-                Object.assign(storeSettings, config);
-                localStorage.setItem('storeSettings', JSON.stringify(storeSettings));
-
-                this.updateShippingDisplay(config);
-                this.showAlert('✅ Configuración de envíos guardada correctamente', 'success');
-                this.showNotification('🚚 Configuración de envíos actualizada');
-                
-                console.log('💾 Configuración envíos guardada:', config);
-            },
-
-            updateShippingDisplay: function(config) {
-                document.getElementById('shipping-status').textContent = 
-                    config.shippingEnabled ? 'Habilitado' : 'Deshabilitado';
-                document.getElementById('current-shipping-cost').textContent = 
-                    config.shippingCost.toLocaleString();
-                document.getElementById('current-free-threshold').textContent = 
-                    config.freeShippingThreshold.toLocaleString();
-            },
-
-            // CONFIGURACIÓN TIENDA - CORREGIDA
-            saveStoreConfig: function(e) {
-                e.preventDefault();
-                
-                const config = {
-                    storeName: document.getElementById('store-name').value.trim(),
-                    storePhone: document.getElementById('store-phone').value.trim(),
-                    storeDescription: document.getElementById('store-description').value.trim()
-                };
-
-                localStorage.setItem('storeSettings', JSON.stringify(config));
-                this.showAlert('✅ Configuración de la tienda guardada correctamente', 'success');
-                this.showNotification('🏪 Información de tienda actualizada');
-            },
-
-            // CARGAR CONFIGURACIONES - CORREGIDA
-            loadConfigurations: function() {
-                console.log('📥 Cargando configuraciones...');
-                
-                // Cargar configuración WhatsApp
-                const whatsappConfig = JSON.parse(localStorage.getItem('whatsappConfig') || '{}');
-                const paymentNumber = localStorage.getItem('paymentWhatsAppNumber');
-                const storeSettings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
-                
-                // CORRECCIÓN: Prioridad correcta para número WhatsApp
-                document.getElementById('whatsapp-number').value = 
-                    paymentNumber || storeSettings.whatsappNumber || whatsappConfig.whatsappNumber || '5493624366733';
-                
-                document.getElementById('business-name').value = 
-                    whatsappConfig.businessName || 'Mi Tienda Online';
-                document.getElementById('whatsapp-welcome').value = 
-                    whatsappConfig.whatsappWelcome || '¡Hola! Bienvenido a nuestra tienda. ¿En qué puedo ayudarte?';
-                document.getElementById('whatsapp-order').value = 
-                    whatsappConfig.whatsappOrder || 'Pedido recibido! Productos: {productos} Total: ${total}';
-
-                // Cargar configuración envíos
-                document.getElementById('shipping-cost').value = 
-                    storeSettings.shippingCost || 5000;
-                document.getElementById('free-shipping-threshold').value = 
-                    storeSettings.freeShippingThreshold || 50000;
-                document.getElementById('shipping-enabled').checked = 
-                    storeSettings.shippingEnabled !== undefined ? storeSettings.shippingEnabled : true;
-
-                this.updateShippingDisplay({
-                    shippingCost: parseInt(document.getElementById('shipping-cost').value),
-                    freeShippingThreshold: parseInt(document.getElementById('free-shipping-threshold').value),
-                    shippingEnabled: document.getElementById('shipping-enabled').checked
-                });
-
-                // Cargar configuración tienda
-                document.getElementById('store-name').value = 
-                    storeSettings.storeName || 'Tienda WhatsApp';
-                document.getElementById('store-phone').value = 
-                    storeSettings.storePhone || '+5493624366733';
-                document.getElementById('store-description').value = 
-                    storeSettings.storeDescription || 'Tu tienda online integrada con WhatsApp';
-
-                console.log('✅ Configuraciones cargadas correctamente');
-            },
-
-            // TEST WHATSAPP - CORREGIDO
-            testWhatsAppConfig: function() {
-                const phoneNumber = document.getElementById('whatsapp-number').value.trim();
-                
-                if (!phoneNumber) {
-                    this.showAlert('❌ Primero configura un número de WhatsApp', 'error');
-                    return;
-                }
-
-                const message = encodeURIComponent('✅ ¡Prueba exitosa! La configuración de WhatsApp está funcionando correctamente.');
-                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-                
-                window.open(whatsappUrl, '_blank');
-                this.showAlert('📱 Prueba de WhatsApp iniciada - Verifica tu teléfono', 'success');
-            },
-
-            // FUNCIONES DE PRODUCTOS - IMPLEMENTADAS CON BACK4APP
-            showProductForm: function() {
-                document.getElementById('product-form').style.display = 'block';
-                document.getElementById('form-title').innerHTML = '<i class="fas fa-plus"></i> Agregar Nuevo Producto';
-                document.getElementById('product-form-data').reset();
-                document.getElementById('product-id').value = '';
-                document.getElementById('image-preview').style.display = 'none';
-                document.getElementById('product-image-url').value = '';
-            },
-
-            hideProductForm: function() {
-                document.getElementById('product-form').style.display = 'none';
-            },
-
-            handleProductSubmit: function(e) {
-                e.preventDefault();
-                
-                const productData = {
-                    name: document.getElementById('product-name').value,
-                    price: parseFloat(document.getElementById('product-price').value),
-                    category: document.getElementById('product-category').value,
-                    stock: parseInt(document.getElementById('product-stock').value),
-                    description: document.getElementById('product-description').value,
-                    imageUrl: document.getElementById('product-image-url').value,
-                    isActive: true
-                };
-
-                this.saveProductToBack4App(productData);
-            },
-
-            async saveProductToBack4App(productData) {
-                try {
-                    const Product = Parse.Object.extend('Product');
-                    const product = new Product();
-                    
-                    // Guardar producto en Back4App
-                    await product.save(productData);
-                    
-                    this.showAlert('✅ Producto guardado correctamente en Back4App', 'success');
-                    this.hideProductForm();
-                    this.loadProducts();
-                    
-                } catch (error) {
-                    console.error('❌ Error guardando producto:', error);
-                    this.showAlert('❌ Error al guardar el producto: ' + error.message, 'error');
-                }
-            },
-
-            async loadProducts() {
-                try {
-                    const Product = Parse.Object.extend('Product');
-                    const query = new Parse.Query(Product);
-                    query.equalTo('isActive', true);
-                    
-                    const results = await query.find();
-                    
-                    // Actualizar estadísticas
-                    document.getElementById('product-count').textContent = results.length;
-                    document.getElementById('total-products').textContent = results.length;
-                    
-                    // Mostrar productos en el grid
-                    this.renderProducts(results);
-                    
-                } catch (error) {
-                    console.error('❌ Error cargando productos:', error);
-                    document.getElementById('products-grid-admin').innerHTML = 
-                        '<p>Error al cargar productos: ' + error.message + '</p>';
-                }
-            },
-
-            renderProducts: function(products) {
-                const productsGrid = document.getElementById('products-grid-admin');
-                
-                if (products.length === 0) {
-                    productsGrid.innerHTML = '<p>No hay productos cargados aún.</p>';
-                    return;
-                }
-
-                productsGrid.innerHTML = products.map(product => `
-                    <div class="product-card-admin">
-                        <div class="product-image-admin">
-                            ${product.get('imageUrl') ? 
-                                `<img src="${product.get('imageUrl')}" alt="${product.get('name')}">` :
-                                `<i class="fas fa-image"></i>`
-                            }
-                        </div>
-                        <h4>${product.get('name')}</h4>
-                        <p><strong>Precio:</strong> $${product.get('price')?.toLocaleString() || '0'}</p>
-                        <p><strong>Categoría:</strong> ${product.get('category') || 'Sin categoría'}</p>
-                        <p><strong>Stock:</strong> ${product.get('stock') || 0}</p>
-                        <div class="product-actions-admin">
-                            <button class="btn-sm btn-edit" onclick="admin.editProduct('${product.id}')">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button class="btn-sm btn-delete" onclick="admin.deleteProduct('${product.id}')">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            },
-
-            async editProduct(productId) {
-                try {
-                    const Product = Parse.Object.extend('Product');
-                    const query = new Parse.Query(Product);
-                    const product = await query.get(productId);
-                    
-                    // Llenar formulario con datos del producto
-                    document.getElementById('product-id').value = product.id;
-                    document.getElementById('product-name').value = product.get('name');
-                    document.getElementById('product-price').value = product.get('price');
-                    document.getElementById('product-category').value = product.get('category');
-                    document.getElementById('product-stock').value = product.get('stock');
-                    document.getElementById('product-description').value = product.get('description');
-                    
-                    if (product.get('imageUrl')) {
-                        document.getElementById('preview-img').src = product.get('imageUrl');
-                        document.getElementById('image-preview').style.display = 'block';
-                        document.getElementById('product-image-url').value = product.get('imageUrl');
-                    }
-                    
-                    document.getElementById('form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Producto';
-                    document.getElementById('product-form').style.display = 'block';
-                    
-                } catch (error) {
-                    console.error('❌ Error cargando producto:', error);
-                    this.showAlert('❌ Error al cargar el producto: ' + error.message, 'error');
-                }
-            },
-
-            async deleteProduct(productId) {
-                if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-                    try {
-                        const Product = Parse.Object.extend('Product');
-                        const query = new Parse.Query(Product);
-                        const product = await query.get(productId);
-                        
-                        // En lugar de eliminar, marcar como inactivo
-                        product.set('isActive', false);
-                        await product.save();
-                        
-                        this.showAlert('✅ Producto eliminado correctamente', 'success');
-                        this.loadProducts();
-                        
-                    } catch (error) {
-                        console.error('❌ Error eliminando producto:', error);
-                        this.showAlert('❌ Error al eliminar el producto: ' + error.message, 'error');
-                    }
-                }
-            },
-
-            setupImageUpload: function() {
-                const uploadArea = document.getElementById('upload-area');
-                const fileInput = document.getElementById('product-image-upload');
-                
-                uploadArea.addEventListener('click', () => fileInput.click());
-                
-                fileInput.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
-                        this.handleImageUpload(e.target.files[0]);
-                    }
-                });
-            },
-
-            handleImageUpload: function(file) {
-                const uploadArea = document.getElementById('upload-area');
-                const progressBar = document.getElementById('upload-progress-bar');
-                const progressContainer = document.getElementById('upload-progress');
-                
-                uploadArea.classList.add('uploading');
-                progressContainer.style.display = 'block';
-                
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += 10;
-                    progressBar.style.width = progress + '%';
-                    
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        uploadArea.classList.remove('uploading');
-                        progressContainer.style.display = 'none';
-                        
-                        // En un entorno real, aquí subirías la imagen a un servidor
-                        // Por ahora usamos una URL local
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            document.getElementById('preview-img').src = e.target.result;
-                            document.getElementById('image-preview').style.display = 'block';
-                            document.getElementById('product-image-url').value = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                        
-                        this.showAlert('✅ Imagen cargada correctamente', 'success');
-                    }
-                }, 100);
-            },
-
-            updatePassword: function() {
-                const newPassword = document.getElementById('admin-password').value;
-                if (newPassword) {
-                    this.showAlert('✅ Contraseña actualizada correctamente', 'success');
-                    document.getElementById('admin-password').value = '';
-                } else {
-                    this.showAlert('❌ Ingresa una nueva contraseña', 'error');
-                }
-            },
-
-            showAlert: function(message, type) {
-                const alert = document.getElementById('alert');
-                alert.textContent = message;
-                alert.className = `alert ${type}`;
-                alert.style.display = 'block';
-                
-                setTimeout(() => {
-                    alert.style.display = 'none';
-                }, 5000);
-            },
-
-            showNotification: function(message) {
-                const notification = document.getElementById('update-notification');
-                notification.querySelector('span').textContent = message;
-                notification.classList.add('show');
-                
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
-            }
-        };
-
-        // Inicializar cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM cargado, inicializando admin...');
-            admin.init();
-        });
-    </script>
+    <script src="js/config.js"></script>
+    <script src="js/back4app-sync.js"></script>
+    <script src="js/admin.js"></script>
 </body>
 </html>
